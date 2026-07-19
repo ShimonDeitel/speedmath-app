@@ -117,8 +117,8 @@ enum SpokenNumberParser {
 
         guard let last = words.last, let den = fractionWords[last] else { return nil }
         let leading = Array(words.dropLast())
-        if leading.isEmpty {
-            return (1, den) // "a half", spoken alone as "half"
+        if leading.isEmpty || leading == ["a"] || leading == ["an"] {
+            return (1, den) // "half" or "a half"
         }
         guard let num = wordsToInt(leading) else { return nil }
         return (num, den)

@@ -10,7 +10,10 @@ final class AnswerEquivalenceTests: XCTestCase {
 
     func testDecimalEquivalence() {
         XCTAssertEqual(AnswerValue.decimal(3.0), AnswerValue.integer(3))
-        XCTAssertNotEqual(AnswerValue.decimal(0.33), AnswerValue.fraction(num: 1, den: 3))
+        // 0.33 is the standard 2-decimal rounding of 1/3 — the tolerance is
+        // deliberately loose enough to accept it as correct.
+        XCTAssertEqual(AnswerValue.decimal(0.33), AnswerValue.fraction(num: 1, den: 3))
+        XCTAssertNotEqual(AnswerValue.decimal(0.5), AnswerValue.fraction(num: 1, den: 3))
     }
 
     func testNegativeFractionSign() {

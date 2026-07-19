@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct HomeView: View {
-    @Binding var showProfile: Bool
     @Environment(ProStore.self) private var proStore
     @Environment(StatsStore.self) private var stats
     @State private var startSession = false
+    @State private var showProfile = false
 
     var body: some View {
         ZStack {
@@ -52,6 +52,9 @@ struct HomeView: View {
         .navigationDestination(isPresented: $startSession) {
             SessionView()
         }
+        .sheet(isPresented: $showProfile) {
+            ProfileView()
+        }
     }
 
     private var startButton: some View {
@@ -82,7 +85,7 @@ struct HomeView: View {
 
 #Preview {
     NavigationStack {
-        HomeView(showProfile: .constant(false))
+        HomeView()
     }
     .environment(ProStore())
     .environment(StatsStore())
