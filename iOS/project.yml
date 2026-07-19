@@ -75,9 +75,7 @@ targets:
         NSMicrophoneUsageDescription: "SpeedMath uses the microphone in Speed mode so you can say your answer out loud. Audio is processed on your device and is never uploaded."
         NSSpeechRecognitionUsageDescription: "SpeedMath uses on-device speech recognition to turn your spoken answer into a number in Speed mode."
         NSUserTrackingUsageDescription: "Allowing tracking lets the ads shown in the free version be more relevant to you. SpeedMath itself never collects or sells your data. Pro removes ads entirely."
-        # PLACEHOLDER: Google's published sample App ID. Replace with the real
-        # AdMob App ID before submitting — see SPEC.md "Owner TODOs".
-        GADApplicationIdentifier: "ca-app-pub-3940256099942544~1458002511"
+        GADApplicationIdentifier: "ca-app-pub-5131626660617133~2408905983"
         SKAdNetworkItems:
           - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
           - SKAdNetworkIdentifier: 4fzdc2evr5.skadnetwork
