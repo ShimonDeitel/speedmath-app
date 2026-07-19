@@ -1,0 +1,9 @@
+.DS_Store
+xcuserdata/
+DerivedData/
+*.xcodeproj
+.build/
+.swiftpm/
+*.xcuserstate
+Packages/
+.claude-fusion/

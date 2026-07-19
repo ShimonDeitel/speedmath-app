@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SpeedMath — Learn math at the speed of a stopwatch</title>
+<meta name="description" content="SpeedMath drills you from Grade 1 to university level. Type or speak your answer, get timed, see every step." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Archivo+Black&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --paper: #F7F1E1;
+    --paper-deep: #EFE6CE;
+    --ink: #1B2A4A;
+    --ink-muted: rgba(27,42,74,0.62);
+    --tangerine: #FF6B35;
+    --tangerine-deep: #E05522;
+    --brass: #D9A441;
+    --correct: #2E7D5B;
+    --wrong: #C0392B;
+    --border: rgba(27,42,74,0.12);
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+  .display { font-family: 'Archivo Black', sans-serif; }
+  a { color: var(--tangerine); }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px;
+    background: rgba(247,241,225,0.82);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'Archivo Black', sans-serif; font-size: 15px; letter-spacing: 0.5px; color: var(--ink); text-decoration: none; }
+  .nav-logo svg { width: 24px; height: 24px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-links a { color: var(--ink-muted); text-decoration: none; font-size: 14px; font-weight: 600; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    background: var(--tangerine); color: #fff !important; padding: 10px 20px; border-radius: 100px;
+    font-weight: 700; font-size: 14px;
+  }
+
+  section { padding: 120px 24px; position: relative; }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding-top: 140px;
+    background:
+      radial-gradient(circle at 50% -10%, rgba(255,107,53,0.14), transparent 55%),
+      var(--paper);
+  }
+  .hero-watch { width: min(280px, 60vw); height: min(280px, 60vw); margin-bottom: 28px; }
+  .hero h1 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(34px, 6vw, 68px);
+    line-height: 1.04;
+    letter-spacing: -1px;
+    color: var(--ink);
+    max-width: 820px;
+  }
+  .hero h1 span { color: var(--tangerine); }
+  .hero p.sub {
+    margin-top: 20px; font-size: clamp(16px, 2vw, 19px); color: var(--ink-muted);
+    max-width: 560px; font-weight: 500;
+  }
+  .hero-cta {
+    margin-top: 36px; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+  }
+  .btn-primary, .btn-secondary {
+    padding: 15px 30px; border-radius: 100px; font-weight: 800; font-size: 15px;
+    text-decoration: none; display: inline-block; border: none; cursor: pointer;
+  }
+  .btn-primary { background: var(--tangerine); color: #fff; box-shadow: 0 10px 30px -8px rgba(255,107,53,0.55); }
+  .btn-secondary { background: transparent; color: var(--ink); border: 2px solid var(--border); }
+
+  .flip-demo {
+    margin-top: 56px;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap; justify-content: center;
+  }
+  .flip-card {
+    background: var(--ink); color: var(--paper);
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(26px, 5vw, 40px);
+    padding: 18px 28px; border-radius: 16px;
+    min-width: 220px;
+    box-shadow: 0 18px 40px -14px rgba(27,42,74,0.45);
+    transform-style: preserve-3d;
+  }
+  .flip-card.flip { animation: flipIt 0.5s ease; }
+  @keyframes flipIt {
+    0% { transform: rotateX(0deg); }
+    45% { transform: rotateX(90deg); }
+    55% { transform: rotateX(90deg); }
+    100% { transform: rotateX(0deg); }
+  }
+  .flip-arrow { color: var(--brass); font-size: 22px; }
+
+  /* ---------- HOW IT WORKS ---------- */
+  .section-label {
+    text-transform: uppercase; letter-spacing: 2px; font-size: 12px; font-weight: 800;
+    color: var(--tangerine); margin-bottom: 12px; text-align: center;
+  }
+  .section-title {
+    font-family: 'Archivo Black', sans-serif; font-size: clamp(26px, 4vw, 40px);
+    text-align: center; letter-spacing: -0.5px; margin-bottom: 60px;
+  }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+  .card {
+    background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 32px;
+    opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .card.in-view { opacity: 1; transform: translateY(0); }
+  .card-icon {
+    width: 52px; height: 52px; border-radius: 14px; background: rgba(255,107,53,0.12);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 18px;
+  }
+  .card-icon svg { width: 26px; height: 26px; stroke: var(--tangerine); }
+  .card h3 { font-size: 18px; margin-bottom: 8px; }
+  .card p { color: var(--ink-muted); font-size: 14.5px; line-height: 1.6; }
+
+  /* ---------- MODES ---------- */
+  .modes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; }
+  .mode-card {
+    background: #fff; border-radius: 24px; border: 1px solid var(--border); padding: 36px;
+    opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .mode-card.in-view { opacity: 1; transform: translateY(0); }
+  .mode-tag {
+    display: inline-block; padding: 5px 12px; border-radius: 100px; font-size: 11px; font-weight: 800;
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px;
+  }
+  .mode-tag.type { background: rgba(27,42,74,0.08); color: var(--ink); }
+  .mode-tag.speed { background: rgba(255,107,53,0.14); color: var(--tangerine-deep); }
+  .mode-card h3 { font-size: 20px; margin-bottom: 10px; }
+  .mode-card p { color: var(--ink-muted); font-size: 14.5px; margin-bottom: 24px; }
+
+  .mini-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 220px; }
+  .mini-key {
+    background: var(--paper-deep); border-radius: 10px; text-align: center; padding: 12px 0;
+    font-family: 'Archivo Black', sans-serif; font-size: 16px; color: var(--ink);
+  }
+  .mini-key.active { background: var(--tangerine); color: #fff; animation: keyPress 0.3s ease; }
+  @keyframes keyPress { 0% { transform: scale(1); } 50% { transform: scale(0.9); } 100% { transform: scale(1); } }
+
+  .waveform { display: flex; align-items: flex-end; gap: 4px; height: 60px; }
+  .wave-bar { width: 6px; background: var(--tangerine); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; }
+  @keyframes wave { 0%, 100% { height: 10px; } 50% { height: 52px; } }
+
+  /* ---------- LADDER ---------- */
+  .ladder { position: relative; max-width: 620px; margin: 0 auto; }
+  .ladder::before {
+    content: ''; position: absolute; left: 19px; top: 0; bottom: 0; width: 2px;
+    background: var(--border);
+  }
+  .rung {
+    position: relative; padding-left: 56px; margin-bottom: 30px;
+    opacity: 0.35; transition: opacity 0.5s ease;
+  }
+  .rung.in-view { opacity: 1; }
+  .rung::before {
+    content: ''; position: absolute; left: 12px; top: 4px; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--paper); border: 3px solid var(--border);
+    transition: border-color 0.5s ease, background 0.5s ease;
+  }
+  .rung.in-view::before { border-color: var(--tangerine); background: var(--tangerine); }
+  .rung-grade { font-weight: 800; font-size: 13px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 1px; }
+  .rung.in-view .rung-grade { color: var(--tangerine-deep); }
+  .rung-problem { font-family: 'Archivo Black', sans-serif; font-size: 22px; margin-top: 4px; }
+
+  /* ---------- PRO ---------- */
+  .pro-card {
+    max-width: 640px; margin: 0 auto; background: var(--ink); color: var(--paper);
+    border-radius: 28px; padding: 52px; text-align: center;
+  }
+  .pro-card h2 { font-family: 'Archivo Black', sans-serif; font-size: 30px; margin-bottom: 12px; }
+  .pro-card p { color: rgba(247,241,225,0.72); margin-bottom: 28px; }
+  .pro-features { display: flex; flex-direction: column; gap: 12px; max-width: 320px; margin: 0 auto 30px; text-align: left; }
+  .pro-feature { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; }
+  .pro-feature svg { width: 18px; height: 18px; stroke: var(--tangerine); flex-shrink: 0; }
+  .pro-price { font-family: 'Archivo Black', sans-serif; font-size: 15px; color: var(--brass); margin-top: 18px; }
+
+  footer {
+    padding: 48px 24px; text-align: center; border-top: 1px solid var(--border); color: var(--ink-muted); font-size: 13px;
+  }
+  footer a { color: var(--ink-muted); margin: 0 10px; text-decoration: none; font-weight: 600; }
+  footer a:hover { color: var(--tangerine); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="55" r="34" stroke="#FF6B35" stroke-width="7"/>
+      <rect x="42" y="6" width="16" height="12" rx="3" fill="#FF6B35"/>
+      <line x1="50" y1="55" x2="66" y2="42" stroke="#FF6B35" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    SPEEDMATH
+  </a>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#modes">Modes</a>
+    <a href="#pro">Pro</a>
+    <a href="#" class="nav-cta">Get the app</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <svg class="hero-watch" viewBox="0 0 220 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="94" y="8" width="32" height="22" rx="6" fill="#D9A441"/>
+    <circle cx="110" cy="130" r="92" fill="#fff" stroke="#1B2A4A" stroke-opacity="0.08" stroke-width="2"/>
+    <circle cx="110" cy="130" r="92" fill="none" stroke="#FF6B35" stroke-width="8"/>
+    <g id="ticks"></g>
+    <g style="transform-origin: 110px 130px;">
+      <animateTransform id="handSpin" attributeName="transform" type="rotate" from="0 110 130" to="360 110 130" dur="6s" repeatCount="indefinite"/>
+      <line x1="110" y1="130" x2="110" y2="70" stroke="#FF6B35" stroke-width="7" stroke-linecap="round"/>
+    </g>
+    <circle cx="110" cy="130" r="8" fill="#FF6B35"/>
+  </svg>
+
+  <h1 class="display">Learn math at the <span>speed</span> of a stopwatch.</h1>
+  <p class="sub">One button to start. Type or speak your answer. Every question, from first-grade counting to university calculus, timed and explained.</p>
+
+  <div class="hero-cta">
+    <a href="#pro" class="btn-primary">Get SpeedMath</a>
+    <a href="#how" class="btn-secondary">See how it works</a>
+  </div>
+
+  <div class="flip-demo">
+    <div class="flip-card" id="flip-prompt">7 × 8</div>
+    <span class="flip-arrow">→</span>
+    <div class="flip-card" id="flip-answer">56</div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-label">How it works</div>
+    <div class="section-title display">Three steps. No setup.</div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        </div>
+        <h3>Press Start</h3>
+        <p>No login, no setup screen. One big button drops you straight into a question at your level.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/></svg>
+        </div>
+        <h3>Answer your way</h3>
+        <p>Type it on a purpose-built keypad, or just say the number out loud and let SpeedMath listen.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+        </div>
+        <h3>See every step</h3>
+        <p>Right or wrong, get a clear worked solution — and with Pro, ask the AI tutor to explain it differently.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="modes" style="background: var(--paper-deep);">
+  <div class="wrap">
+    <div class="section-label">Two modes</div>
+    <div class="section-title display">However you think fastest.</div>
+    <div class="modes-grid">
+      <div class="mode-card">
+        <span class="mode-tag type">Type</span>
+        <h3>Precision keypad</h3>
+        <p>Digits, decimals, negatives, and fractions — a keypad built for math, not text.</p>
+        <div class="mini-keypad" id="mini-keypad">
+          <div class="mini-key">7</div><div class="mini-key">8</div><div class="mini-key">9</div>
+          <div class="mini-key">4</div><div class="mini-key">5</div><div class="mini-key">6</div>
+          <div class="mini-key">1</div><div class="mini-key">2</div><div class="mini-key">3</div>
+        </div>
+      </div>
+      <div class="mode-card">
+        <span class="mode-tag speed">Speed</span>
+        <h3>Just say it</h3>
+        <p>Speak your answer and SpeedMath's on-device listener times how long it takes you to say it.</p>
+        <div class="waveform">
+          <div class="wave-bar" style="animation-delay:0s"></div>
+          <div class="wave-bar" style="animation-delay:0.1s"></div>
+          <div class="wave-bar" style="animation-delay:0.2s"></div>
+          <div class="wave-bar" style="animation-delay:0.3s"></div>
+          <div class="wave-bar" style="animation-delay:0.15s"></div>
+          <div class="wave-bar" style="animation-delay:0.25s"></div>
+          <div class="wave-bar" style="animation-delay:0.05s"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-label">The ladder</div>
+    <div class="section-title display">Grade 1 to university.</div>
+    <div class="ladder" id="ladder">
+      <div class="rung"><div class="rung-grade">Grade 1</div><div class="rung-problem display">6 + 7</div></div>
+      <div class="rung"><div class="rung-grade">Grade 4</div><div class="rung-problem display">3/4 of 20</div></div>
+      <div class="rung"><div class="rung-grade">Grade 6</div><div class="rung-problem display">35% of 80</div></div>
+      <div class="rung"><div class="rung-grade">Grade 8</div><div class="rung-problem display">3x − 7 = 20</div></div>
+      <div class="rung"><div class="rung-grade">Grade 10</div><div class="rung-problem display">x² − 5x + 6 = 0</div></div>
+      <div class="rung"><div class="rung-grade">Grade 11</div><div class="rung-problem display">sin 30°</div></div>
+      <div class="rung"><div class="rung-grade">Grade 12</div><div class="rung-problem display">d/dx[3x²]</div></div>
+      <div class="rung"><div class="rung-grade">University</div><div class="rung-problem display">∫₀² 3x² dx</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="pro" style="background: var(--paper-deep);">
+  <div class="pro-card">
+    <h2>SpeedMath Pro</h2>
+    <p>Go faster with zero distractions.</p>
+    <div class="pro-features">
+      <div class="pro-feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 4.9l14.2 14.2M12 3a9 9 0 100 18 9 9 0 000-18z"/></svg>
+        No ads, ever
+      </div>
+      <div class="pro-feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+        Ask the AI tutor to explain any question
+      </div>
+      <div class="pro-feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+        A cleaner, faster screen for every round
+      </div>
+    </div>
+    <a href="#" class="btn-primary">Get SpeedMath</a>
+    <div class="pro-price">$4.99/month · cancel anytime</div>
+  </div>
+</section>
+
+<footer>
+  <div>© 2026 SpeedMath</div>
+  <div style="margin-top: 10px;">
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms of Use</a>
+    <a href="mailto:s0533495227@gmail.com">Contact</a>
+  </div>
+</footer>
+
+<script>
+  // Reveal-on-scroll for cards, mode cards, and ladder rungs.
+  const revealTargets = document.querySelectorAll('.card, .mode-card, .rung');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) entry.target.classList.add('in-view');
+    });
+  }, { threshold: 0.25 });
+  revealTargets.forEach((el) => observer.observe(el));
+
+  // Hero flip-demo: cycle through problems, flipping both cards each time.
+  const problems = [
+    ['7 × 8', '56'],
+    ['3/4 of 20', '15'],
+    ['x² − 5x + 6 = 0', 'x = 2'],
+    ['sin 30°', '1/2'],
+    ['∫₀² 3x² dx', '8'],
+    ['15 − 9', '6'],
+  ];
+  let problemIndex = 0;
+  const promptEl = document.getElementById('flip-prompt');
+  const answerEl = document.getElementById('flip-answer');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function nextProblem() {
+    problemIndex = (problemIndex + 1) % problems.length;
+    const [prompt, answer] = problems[problemIndex];
+    if (!prefersReducedMotion) {
+      promptEl.classList.remove('flip'); void promptEl.offsetWidth; promptEl.classList.add('flip');
+      answerEl.classList.remove('flip'); void answerEl.offsetWidth; answerEl.classList.add('flip');
+    }
+    setTimeout(() => {
+      promptEl.textContent = prompt;
+      answerEl.textContent = answer;
+    }, prefersReducedMotion ? 0 : 225);
+  }
+  if (!prefersReducedMotion) setInterval(nextProblem, 2400);
+
+  // Mini keypad "typing" loop.
+  const keys = document.querySelectorAll('#mini-keypad .mini-key');
+  let keyIndex = 0;
+  function pressKey() {
+    keys.forEach((k) => k.classList.remove('active'));
+    keys[keyIndex].classList.add('active');
+    keyIndex = (keyIndex + 1) % keys.length;
+  }
+  if (!prefersReducedMotion) setInterval(pressKey, 500);
+
+  // Draw the 12 tick marks on the hero stopwatch face.
+  const ticksGroup = document.getElementById('ticks');
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * 2 * Math.PI;
+    const cx = 110, cy = 130, rOuter = 84, rInner = 74;
+    const x1 = cx + Math.cos(angle) * rInner, y1 = cy + Math.sin(angle) * rInner;
+    const x2 = cx + Math.cos(angle) * rOuter, y2 = cy + Math.sin(angle) * rOuter;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', '#1B2A4A'); line.setAttribute('stroke-opacity', '0.2');
+    line.setAttribute('stroke-width', '2');
+    ticksGroup.appendChild(line);
+  }
+
+  if (prefersReducedMotion) {
+    document.getElementById('handSpin').remove();
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+SpeedMath is math practice with nothing between you and the next question. No account, no setup screen — one big button starts a round.
+
+Every question is generated on the spot, from first-grade counting up through university-level integrals, determinants, and limits, across 130 levels that track ten per grade. Answer in Type mode on a keypad built for math — digits, decimals, negatives, and fractions — or switch to Speed mode and just say the answer out loud; SpeedMath listens on-device and times how long it takes you. Get it right or wrong, you always see a clear worked solution afterward, and your level moves up or down based on how fast and how accurate you've been.
+
+Your progress, streaks, and "performing at Grade X" estimate live entirely on your device — there's no account to create and nothing to sync.
+
+The free version is supported by ads. SpeedMath Pro, an auto-renewing subscription at $4.99 per month, removes every ad and unlocks "Explain It" — a plain-language AI tutor that walks through any question a different way when the built-in steps aren't clicking.
+
+No login. No streak-breaking penalties. Just questions, a clock, and how fast you can go.

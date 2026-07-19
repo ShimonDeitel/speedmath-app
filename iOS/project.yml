@@ -1,0 +1,151 @@
+name: SpeedMath
+options:
+  bundleIdPrefix: com.deitel
+  deploymentTarget:
+    iOS: "26.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: W7Q885Q59C        # Joshua Deitel — hardcoded, wrong-team gotcha
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+    GCC_TREAT_WARNINGS_AS_ERRORS: NO
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: NO
+    "CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]": NO
+
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads.git
+    from: 12.0.0
+  GoogleUserMessagingPlatform:
+    url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git
+    from: 3.0.0
+
+schemes:
+  SpeedMath:
+    build:
+      targets:
+        SpeedMath: all
+        SpeedMathTests: [test]
+        SpeedMathUITests: [test]
+    run:
+      config: Debug
+      storeKitConfiguration: SpeedMath.storekit
+    test:
+      config: Debug
+      targets: [SpeedMathTests, SpeedMathUITests]
+
+targets:
+  SpeedMath:
+    type: application
+    platform: iOS
+    sources:
+      - path: SpeedMath
+      - path: SpeedMath.storekit
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.deitel.speedmath
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_ENTITLEMENTS: SpeedMath/SpeedMath.entitlements
+    dependencies:
+      - package: GoogleMobileAds
+        product: GoogleMobileAds
+      - package: GoogleUserMessagingPlatform
+        product: GoogleUserMessagingPlatform
+    info:
+      path: SpeedMath/Info.plist
+      properties:
+        CFBundleDisplayName: SpeedMath
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        ITSAppUsesNonExemptEncryption: false
+        NSMicrophoneUsageDescription: "SpeedMath uses the microphone in Speed mode so you can say your answer out loud. Audio is processed on your device and is never uploaded."
+        NSSpeechRecognitionUsageDescription: "SpeedMath uses on-device speech recognition to turn your spoken answer into a number in Speed mode."
+        NSUserTrackingUsageDescription: "Allowing tracking lets the ads shown in the free version be more relevant to you. SpeedMath itself never collects or sells your data. Pro removes ads entirely."
+        # PLACEHOLDER: Google's published sample App ID. Replace with the real
+        # AdMob App ID before submitting — see SPEC.md "Owner TODOs".
+        GADApplicationIdentifier: "ca-app-pub-3940256099942544~1458002511"
+        SKAdNetworkItems:
+          - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
+          - SKAdNetworkIdentifier: 4fzdc2evr5.skadnetwork
+          - SKAdNetworkIdentifier: 2fnua5tdw4.skadnetwork
+          - SKAdNetworkIdentifier: ydx93a7ass.skadnetwork
+          - SKAdNetworkIdentifier: 5a6flpkh64.skadnetwork
+          - SKAdNetworkIdentifier: p78axxw29g.skadnetwork
+          - SKAdNetworkIdentifier: v72qych5uu.skadnetwork
+          - SKAdNetworkIdentifier: c6k4g5qg8m.skadnetwork
+          - SKAdNetworkIdentifier: s39g8k73mm.skadnetwork
+          - SKAdNetworkIdentifier: 3qy4746246.skadnetwork
+          - SKAdNetworkIdentifier: 3rd42ekr43.skadnetwork
+          - SKAdNetworkIdentifier: f38h382jlk.skadnetwork
+          - SKAdNetworkIdentifier: hs6bdukanm.skadnetwork
+          - SKAdNetworkIdentifier: prcb7njmu6.skadnetwork
+          - SKAdNetworkIdentifier: v4nxqhlyqp.skadnetwork
+          - SKAdNetworkIdentifier: wzmmz9fp6w.skadnetwork
+          - SKAdNetworkIdentifier: yclnxrl5pm.skadnetwork
+          - SKAdNetworkIdentifier: t38b2kh725.skadnetwork
+          - SKAdNetworkIdentifier: 7ug5zh24hu.skadnetwork
+          - SKAdNetworkIdentifier: gta9lk7p23.skadnetwork
+          - SKAdNetworkIdentifier: 4468km3ulz.skadnetwork
+          - SKAdNetworkIdentifier: 2u9pt9hc89.skadnetwork
+          - SKAdNetworkIdentifier: 8s468mfl3y.skadnetwork
+          - SKAdNetworkIdentifier: klf5c3l5u5.skadnetwork
+          - SKAdNetworkIdentifier: ppxm28t8ap.skadnetwork
+          - SKAdNetworkIdentifier: kbd757ywx3.skadnetwork
+          - SKAdNetworkIdentifier: 9t245vhmpl.skadnetwork
+          - SKAdNetworkIdentifier: 44jx6755aq.skadnetwork
+          - SKAdNetworkIdentifier: k674qkevps.skadnetwork
+          - SKAdNetworkIdentifier: 4pfyvq9l8r.skadnetwork
+          - SKAdNetworkIdentifier: 2q884k7wea.skadnetwork
+          - SKAdNetworkIdentifier: 8m87ys5vg8.skadnetwork
+          - SKAdNetworkIdentifier: vutu7akeur.skadnetwork
+          - SKAdNetworkIdentifier: y5ghdn5j9k.skadnetwork
+          - SKAdNetworkIdentifier: n6fk4nfna4.skadnetwork
+          - SKAdNetworkIdentifier: v9wttpbfk9.skadnetwork
+          - SKAdNetworkIdentifier: n38lu8286q.skadnetwork
+          - SKAdNetworkIdentifier: 47vhws6wlr.skadnetwork
+          - SKAdNetworkIdentifier: kbmxgpxpgc.skadnetwork
+          - SKAdNetworkIdentifier: 9nlqeag3gk.skadnetwork
+          - SKAdNetworkIdentifier: 44n7hlldy6.skadnetwork
+
+  SpeedMathTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SpeedMathTests
+    dependencies:
+      - target: SpeedMath
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.deitel.speedmath.tests
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/SpeedMath.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SpeedMath"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+  SpeedMathUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: SpeedMathUITests
+    dependencies:
+      - target: SpeedMath
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.deitel.speedmath.uitests
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: SpeedMath
