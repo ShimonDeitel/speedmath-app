@@ -62,7 +62,8 @@
       radial-gradient(circle at 50% -10%, rgba(255,107,53,0.14), transparent 55%),
       var(--paper);
   }
-  .hero-watch { width: min(280px, 60vw); height: min(280px, 60vw); margin-bottom: 28px; }
+  .hero-watch { width: min(360px, 78vw); height: min(360px, 78vw); margin-bottom: 12px; touch-action: pan-y; }
+  .hero-watch canvas { display: block; width: 100% !important; height: 100% !important; }
   .hero h1 {
     font-family: 'Archivo Black', sans-serif;
     font-size: clamp(34px, 6vw, 68px);
@@ -223,17 +224,7 @@
 </nav>
 
 <section class="hero">
-  <svg class="hero-watch" viewBox="0 0 220 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="94" y="8" width="32" height="22" rx="6" fill="#D9A441"/>
-    <circle cx="110" cy="130" r="92" fill="#fff" stroke="#1B2A4A" stroke-opacity="0.08" stroke-width="2"/>
-    <circle cx="110" cy="130" r="92" fill="none" stroke="#FF6B35" stroke-width="8"/>
-    <g id="ticks"></g>
-    <g style="transform-origin: 110px 130px;">
-      <animateTransform id="handSpin" attributeName="transform" type="rotate" from="0 110 130" to="360 110 130" dur="6s" repeatCount="indefinite"/>
-      <line x1="110" y1="130" x2="110" y2="70" stroke="#FF6B35" stroke-width="7" stroke-linecap="round"/>
-    </g>
-    <circle cx="110" cy="130" r="8" fill="#FF6B35"/>
-  </svg>
+  <div id="hero-watch-3d" class="hero-watch" role="img" aria-label="A rotating 3D stopwatch, SpeedMath's mark"></div>
 
   <h1 class="display">Learn math at the <span>speed</span> of a stopwatch.</h1>
   <p class="sub">One button to start. Type or speak your answer. Every question, from first-grade counting to university calculus, timed and explained.</p>
@@ -410,23 +401,121 @@
   }
   if (!prefersReducedMotion) setInterval(pressKey, 500);
 
-  // Draw the 12 tick marks on the hero stopwatch face.
-  const ticksGroup = document.getElementById('ticks');
+</script>
+
+<script type="importmap">
+  { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module">
+  import * as THREE from 'three';
+
+  const mount = document.getElementById('hero-watch-3d');
+  const prefersReducedMotion3D = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const PAPER = 0xF7F1E1, INK = 0x1B2A4A, TANGERINE = 0xFF6B35, BRASS = 0xD9A441;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(0, 0.4, 6.2);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  mount.appendChild(renderer.domElement);
+
+  // Lighting: soft ambient fill plus a key light for real shading/depth.
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+  const key = new THREE.DirectionalLight(0xffffff, 1.1);
+  key.position.set(3, 4, 5);
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffb98a, 0.5);
+  rim.position.set(-4, -2, -3);
+  scene.add(rim);
+
+  const watch = new THREE.Group();
+  scene.add(watch);
+
+  // Face (recessed paper-colored disc)
+  const face = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.72, 1.72, 0.14, 64),
+    new THREE.MeshStandardMaterial({ color: PAPER, roughness: 0.9, metalness: 0 })
+  );
+  face.rotation.x = Math.PI / 2;
+  face.position.z = -0.08;
+  watch.add(face);
+
+  // Ring (torus body)
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(1.72, 0.32, 32, 96),
+    new THREE.MeshStandardMaterial({ color: TANGERINE, roughness: 0.35, metalness: 0.15 })
+  );
+  watch.add(ring);
+
+  // Crown
+  const crown = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.34, 0.34, 0.5, 24),
+    new THREE.MeshStandardMaterial({ color: BRASS, roughness: 0.3, metalness: 0.5 })
+  );
+  crown.position.set(0, 2.28, 0);
+  watch.add(crown);
+
+  // Twelve tick marks
   for (let i = 0; i < 12; i++) {
-    const angle = (i / 12) * 2 * Math.PI;
-    const cx = 110, cy = 130, rOuter = 84, rInner = 74;
-    const x1 = cx + Math.cos(angle) * rInner, y1 = cy + Math.sin(angle) * rInner;
-    const x2 = cx + Math.cos(angle) * rOuter, y2 = cy + Math.sin(angle) * rOuter;
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-    line.setAttribute('stroke', '#1B2A4A'); line.setAttribute('stroke-opacity', '0.2');
-    line.setAttribute('stroke-width', '2');
-    ticksGroup.appendChild(line);
+    const angle = (i / 12) * Math.PI * 2;
+    const tick = new THREE.Mesh(
+      new THREE.BoxGeometry(0.06, 0.24, 0.08),
+      new THREE.MeshStandardMaterial({ color: INK, roughness: 0.8 })
+    );
+    const r = 1.42;
+    tick.position.set(Math.sin(angle) * r, Math.cos(angle) * r, 0.05);
+    tick.rotation.z = -angle;
+    watch.add(tick);
   }
 
-  if (prefersReducedMotion) {
-    document.getElementById('handSpin').remove();
+  // Sweeping hand, pivoted at the hub
+  const handPivot = new THREE.Group();
+  watch.add(handPivot);
+  const hand = new THREE.Mesh(
+    new THREE.BoxGeometry(0.14, 1.5, 0.14),
+    new THREE.MeshStandardMaterial({ color: TANGERINE, roughness: 0.35, metalness: 0.15 })
+  );
+  hand.position.y = 0.72;
+  handPivot.add(hand);
+
+  const hub = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2, 24, 24),
+    new THREE.MeshStandardMaterial({ color: INK, roughness: 0.4, metalness: 0.2 })
+  );
+  hub.position.z = 0.1;
+  watch.add(hub);
+
+  function sizeToContainer() {
+    const w = mount.clientWidth, h = mount.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  sizeToContainer();
+  new ResizeObserver(sizeToContainer).observe(mount);
+
+  let lastTime = 0;
+  function animate(time) {
+    const dt = Math.min((time - lastTime) / 1000, 0.05) || 0;
+    lastTime = time;
+    if (!prefersReducedMotion3D) {
+      watch.rotation.y += dt * 0.5;
+      watch.rotation.x = 0.12 + Math.sin(time * 0.0004) * 0.05;
+      handPivot.rotation.z -= dt * 1.1;
+    }
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+
+  if (prefersReducedMotion3D) {
+    watch.rotation.x = 0.15;
+    watch.rotation.y = -0.3;
+    renderer.render(scene, camera);
   }
 </script>
 
