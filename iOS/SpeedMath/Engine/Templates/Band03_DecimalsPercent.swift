@@ -118,5 +118,41 @@ enum Band03DecimalsPercent {
                              prompt: "\(total) for \(count) — price per one?", spokenPrompt: "\(total) split \(count) ways, how much is one share?",
                              answer: .integer(rate), steps: steps)
         },
+        QuestionTemplate(id: "percent.increase", topic: topic, levels: range) { level, rng in
+            let options: [(pct: Int, factor: Int)] = [(10, 10), (20, 5), (25, 4), (50, 2)]
+            let choice = options[rInt(0...(options.count - 1), &rng)]
+            let m = rInt(3...25, &rng)
+            let base = m * choice.factor
+            let increase = base * choice.pct / 100
+            let answer = base + increase
+            let steps = buildSteps {
+                $0.add("\(choice.pct)% of \(base) = \(base) × \(choice.pct) ÷ 100 = \(increase).")
+                $0.add("Add it back: \(base) + \(increase) = \(answer).")
+            }
+            return Question(templateID: "percent.increase", topic: topic, level: level,
+                             prompt: "Increase \(base) by \(choice.pct)%", spokenPrompt: "Increase \(base) by \(choice.pct) percent",
+                             answer: .integer(answer), steps: steps)
+        },
+        QuestionTemplate(id: "average.two", topic: topic, levels: range) { level, rng in
+            let m = rInt(5...40, &rng)
+            let d = rInt(1...10, &rng)
+            let a = m - d, b = m + d
+            let steps = buildSteps {
+                $0.add("Add them and divide by 2: (\(a) + \(b)) ÷ 2.")
+                $0.add("\(a + b) ÷ 2 = \(m).")
+            }
+            return Question(templateID: "average.two", topic: topic, level: level,
+                             prompt: "Average of \(a) and \(b)", spokenPrompt: "The average of \(a) and \(b)",
+                             answer: .integer(m), steps: steps)
+        },
+        QuestionTemplate(id: "money.change", topic: topic, levels: range) { level, rng in
+            let total = [10, 20, 50][rInt(0...2, &rng)]
+            let price = rInt(1...(total - 1), &rng)
+            let change = total - price
+            let steps = buildSteps { $0.add("Subtract the price from what was paid: \(total) - \(price).") ; $0.add("Answer: \(change).") }
+            return Question(templateID: "money.change", topic: topic, level: level,
+                             prompt: "Pay $\(total) for a $\(price) item — change?", spokenPrompt: "Pay \(total) dollars for a \(price) dollar item, what's the change?",
+                             answer: .integer(change), steps: steps)
+        },
     ]
 }

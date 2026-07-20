@@ -10,6 +10,7 @@ struct SessionView: View {
     @State private var mode: AnswerMode = .type
     @State private var keypadText = ""
     @State private var interstitial = InterstitialController()
+    @State private var showLevelUp = false
 
     var body: some View {
         ZStack {
@@ -18,7 +19,13 @@ struct SessionView: View {
             if let controller {
                 content(controller)
             } else {
-                ProgressView()
+                brandedLoading
+            }
+
+            if showLevelUp {
+                LevelUpOverlay(level: stats.level)
+                    .transition(.scale(scale: 0.85).combined(with: .opacity))
+                    .zIndex(1)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -32,6 +39,24 @@ struct SessionView: View {
             controller = SessionController(startingLevel: stats.level)
             mode = stats.snapshot.defaultMode
             if !proStore.isPro { interstitial.preload(coordinator: adsCoordinator) }
+        }
+        .onChange(of: stats.justLeveledUp) { _, leveledUp in
+            guard leveledUp else { return }
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { showLevelUp = true }
+            Task {
+                try? await Task.sleep(for: .seconds(1.8))
+                withAnimation(.easeOut(duration: 0.3)) { showLevelUp = false }
+                stats.clearLevelUpFlag()
+            }
+        }
+    }
+
+    private var brandedLoading: some View {
+        VStack(spacing: SMSpacing.sm) {
+            StopwatchHandView(isSpinning: true, size: 56)
+            Text("Getting ready...")
+                .font(.smBody(13))
+                .foregroundStyle(Color.smInkMuted)
         }
     }
 
@@ -108,7 +133,7 @@ struct SessionView: View {
                         .font(.smDisplay(32))
                         .foregroundStyle(Color.smTangerine)
                         .frame(height: 40)
-                    KeypadView(text: $keypadText) {
+                    KeypadView(text: $keypadText, hapticStyle: stats.snapshot.hapticStyle) {
                         submitTyped(controller)
                     }
                 }
@@ -132,9 +157,8 @@ struct SessionView: View {
 
     private func playFeedback(for controller: SessionController) {
         guard case .solved(let correct, _) = controller.phase else { return }
-        if stats.snapshot.hapticsEnabled {
-            correct ? Haptics.success() : Haptics.failure()
-        }
+        let style = stats.snapshot.hapticStyle
+        correct ? Haptics.success(style) : Haptics.failure(style)
         correct ? Sound.correct(enabled: stats.snapshot.soundEnabled) : Sound.wrong(enabled: stats.snapshot.soundEnabled)
     }
 

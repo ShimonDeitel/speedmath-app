@@ -111,5 +111,37 @@ enum Band01Counting {
                              prompt: "Half of \(n)", spokenPrompt: "What is half of \(n)?",
                              answer: .integer(half), steps: steps)
         },
+        QuestionTemplate(id: "sequence.count.by", topic: topic, levels: range) { level, rng in
+            let step = [2, 5, 10][rInt(0...2, &rng)]
+            let start = rInt(0...20, &rng)
+            let t1 = start + step, t2 = start + 2 * step, t3 = start + 3 * step
+            let steps = buildSteps {
+                $0.add("Each step adds \(step).")
+                $0.add("\(t2) + \(step) = \(t3).")
+            }
+            return Question(templateID: "sequence.count.by", topic: topic, level: level,
+                             prompt: "\(start), \(t1), \(t2), ?", spokenPrompt: "\(start), \(t1), \(t2), what comes next?",
+                             answer: .integer(t3), steps: steps)
+        },
+        QuestionTemplate(id: "add.three", topic: topic, levels: range) { level, rng in
+            let a = rInt(1...9, &rng), b = rInt(1...9, &rng), c = rInt(1...9, &rng)
+            let steps = buildSteps {
+                $0.add("Add the first two: \(a) + \(b) = \(a + b).")
+                $0.add("Then add \(c): \(a + b) + \(c) = \(a + b + c).")
+            }
+            return Question(templateID: "add.three", topic: topic, level: level,
+                             prompt: "\(a) + \(b) + \(c)", spokenPrompt: "\(a) plus \(b) plus \(c)",
+                             answer: .integer(a + b + c), steps: steps)
+        },
+        QuestionTemplate(id: "compare.bigger", topic: topic, levels: range) { level, rng in
+            let a = rInt(1...99, &rng)
+            var b = rInt(1...99, &rng)
+            if b == a { b += 1 }
+            let bigger = max(a, b)
+            let steps = buildSteps { $0.add("Compare \(a) and \(b).") ; $0.add("The bigger one is \(bigger).") }
+            return Question(templateID: "compare.bigger", topic: topic, level: level,
+                             prompt: "Bigger: \(a) or \(b)?", spokenPrompt: "Which is bigger, \(a) or \(b)?",
+                             answer: .integer(bigger), steps: steps)
+        },
     ]
 }

@@ -117,5 +117,44 @@ enum Band08University {
                              spokenPrompt: "The partial derivative with respect to x of \(a) x squared y, at x equals \(x0), y equals \(y0)",
                              answer: .integer(answer), steps: steps)
         },
+        QuestionTemplate(id: "integral.linear", topic: topic, levels: range) { level, rng in
+            let a = rInt(1...6, &rng)
+            let b = rInt(-8...8, &rng)
+            let k = rInt(1...6, &rng)
+            let numerator = a * k * k + 2 * b * k
+            let answer = AnswerValue.reducedFraction(numerator, 2)
+            let bTerm = b >= 0 ? "+ \(b)" : "- \(abs(b))"
+            let steps = buildSteps {
+                $0.add("∫ (\(a)x \(bTerm)) dx = \(a)x²/2 \(bTerm)x. Evaluate from 0 to \(k).")
+                $0.add("\(a) × \(k)² ÷ 2 \(bTerm) × \(k) = \(numerator)/2 = \(answer).")
+            }
+            return Question(templateID: "integral.linear", topic: topic, level: level,
+                             prompt: "∫₀^\(k) (\(a)x \(bTerm)) dx",
+                             spokenPrompt: "The integral from 0 to \(k) of \(a) x \(bTerm), d x",
+                             answer: answer, steps: steps)
+        },
+        QuestionTemplate(id: "vector.magnitude.squared", topic: topic, levels: range) { level, rng in
+            let x = rInt(-9...9, &rng), y = rInt(-9...9, &rng), z = rInt(-9...9, &rng)
+            let answer = x * x + y * y + z * z
+            let steps = buildSteps {
+                $0.add("|v|² = x² + y² + z² = \(x)² + \(y)² + \(z)².")
+                $0.add("= \(x * x) + \(y * y) + \(z * z) = \(answer).")
+            }
+            return Question(templateID: "vector.magnitude.squared", topic: topic, level: level,
+                             prompt: "|v|² for v = (\(x), \(y), \(z))",
+                             spokenPrompt: "The squared magnitude of the vector \(x), \(y), \(z)",
+                             answer: .integer(answer), steps: steps)
+        },
+        QuestionTemplate(id: "sum.of.squares", topic: topic, levels: range) { level, rng in
+            let n = rInt(3...12, &rng)
+            let answer = n * (n + 1) * (2 * n + 1) / 6
+            let steps = buildSteps {
+                $0.add("Sum of squares formula: n(n+1)(2n+1) ÷ 6 = \(n)(\(n + 1))(\(2 * n + 1)) ÷ 6.")
+                $0.add("= \(n * (n + 1) * (2 * n + 1)) ÷ 6 = \(answer).")
+            }
+            return Question(templateID: "sum.of.squares", topic: topic, level: level,
+                             prompt: "1² + 2² + ... + \(n)²", spokenPrompt: "The sum of the squares from 1 to \(n)",
+                             answer: .integer(answer), steps: steps)
+        },
     ]
 }

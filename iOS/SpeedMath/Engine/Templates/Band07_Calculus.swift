@@ -83,5 +83,50 @@ enum Band07Calculus {
                              spokenPrompt: "The derivative of the product of x plus \(a) and x plus \(b), at x equals \(x0)",
                              answer: .integer(answer), steps: steps)
         },
+        QuestionTemplate(id: "second.derivative", topic: topic, levels: range) { level, rng in
+            let a = rInt(1...5, &rng)
+            let x0 = rInt(-6...6, &rng)
+            let answer = 6 * a * x0
+            let steps = buildSteps {
+                $0.add("f'(x) = \(3 * a)x², so f''(x) = \(6 * a)x.")
+                $0.add("Evaluate at x = \(x0): \(6 * a) × \(x0) = \(answer).")
+            }
+            return Question(templateID: "second.derivative", topic: topic, level: level,
+                             prompt: "d²/dx²[\(a)x³] at x = \(x0)",
+                             spokenPrompt: "The second derivative of \(a) x cubed, at x equals \(x0)",
+                             answer: .integer(answer), steps: steps)
+        },
+        QuestionTemplate(id: "critical.point", topic: topic, levels: range) { level, rng in
+            let vertexX = rInt(-10...10, &rng)
+            let b = -2 * vertexX
+            let c = rInt(-10...10, &rng)
+            let bTerm = b == 0 ? "" : (b > 0 ? " + \(b)x" : " - \(abs(b))x")
+            let cTerm = c == 0 ? "" : (c > 0 ? " + \(c)" : " - \(abs(c))")
+            let steps = buildSteps {
+                $0.add("f'(x) = 2x\(signedTerm(b, "")). Setting it to 0: 2x = \(-b).")
+                $0.add("x = \(-b) ÷ 2 = \(vertexX).")
+            }
+            return Question(templateID: "critical.point", topic: topic, level: level,
+                             prompt: "Where is f'(x) = 0 for f(x) = x²\(bTerm)\(cTerm)?",
+                             spokenPrompt: "Where does the derivative equal zero for f of x equals x squared\(bTerm)\(cTerm)?",
+                             answer: .integer(vertexX), steps: steps)
+        },
+        QuestionTemplate(id: "limit.infinity", topic: topic, levels: range) { level, rng in
+            let c = rInt(1...6, &rng)
+            let m = rInt(1...6, &rng)
+            let a = c * m
+            let b = rInt(-9...9, &rng)
+            let d = rInt(-9...9, &rng)
+            let bTerm = b >= 0 ? "+ \(b)" : "- \(abs(b))"
+            let dTerm = d >= 0 ? "+ \(d)" : "- \(abs(d))"
+            let steps = buildSteps {
+                $0.add("Same degree top and bottom: the limit is the ratio of the leading coefficients.")
+                $0.add("\(a) ÷ \(c) = \(m).")
+            }
+            return Question(templateID: "limit.infinity", topic: topic, level: level,
+                             prompt: "lim x→∞ of (\(a)x \(bTerm))/(\(c)x \(dTerm))",
+                             spokenPrompt: "The limit as x approaches infinity of \(a) x \(bTerm), over \(c) x \(dTerm)",
+                             answer: .integer(m), steps: steps)
+        },
     ]
 }

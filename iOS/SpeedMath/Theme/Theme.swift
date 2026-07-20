@@ -1,17 +1,99 @@
 import SwiftUI
+import Observation
 
 /// Retro Stopwatch palette. Every color has a fixed value in both appearances —
 /// the app is intentionally light-only (cream paper reads wrong inverted).
+/// The accent (tangerine by default) is user-selectable via `ThemeManager`;
+/// everything else in the palette is fixed.
 extension Color {
     static let smPaper = Color(red: 0xF7 / 255, green: 0xF1 / 255, blue: 0xE1 / 255)
     static let smPaperDeep = Color(red: 0xEF / 255, green: 0xE6 / 255, blue: 0xCE / 255)
     static let smInk = Color(red: 0x1B / 255, green: 0x2A / 255, blue: 0x4A / 255)
     static let smInkMuted = Color(red: 0x1B / 255, green: 0x2A / 255, blue: 0x4A / 255).opacity(0.58)
-    static let smTangerine = Color(red: 0xFF / 255, green: 0x6B / 255, blue: 0x35 / 255)
-    static let smTangerineDeep = Color(red: 0xE0 / 255, green: 0x55 / 255, blue: 0x22 / 255)
+    @MainActor static var smTangerine: Color { ThemeManager.shared.palette.base }
+    @MainActor static var smTangerineDeep: Color { ThemeManager.shared.palette.deep }
     static let smBrass = Color(red: 0xD9 / 255, green: 0xA4 / 255, blue: 0x41 / 255)
     static let smCorrect = Color(red: 0x2E / 255, green: 0x7D / 255, blue: 0x5B / 255)
     static let smWrong = Color(red: 0xC0 / 255, green: 0x39 / 255, blue: 0x2B / 255)
+}
+
+/// A selectable accent palette. `base`/`deep` replace `Color.smTangerine`/
+/// `smTangerineDeep` app-wide the instant the selection changes, since those
+/// are computed properties reading `ThemeManager.shared`.
+enum AccentPalette: String, Codable, CaseIterable, Identifiable {
+    case tangerine, sky, berry, violet
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .tangerine: return "Tangerine"
+        case .sky: return "Sky"
+        case .berry: return "Berry"
+        case .violet: return "Violet"
+        }
+    }
+
+    var base: Color {
+        switch self {
+        case .tangerine: return Color(red: 0xFF / 255, green: 0x6B / 255, blue: 0x35 / 255)
+        case .sky: return Color(red: 0x2F / 255, green: 0x80 / 255, blue: 0xC4 / 255)
+        case .berry: return Color(red: 0xC4 / 255, green: 0x35 / 255, blue: 0x6B / 255)
+        case .violet: return Color(red: 0x7C / 255, green: 0x5C / 255, blue: 0xC4 / 255)
+        }
+    }
+
+    var deep: Color {
+        switch self {
+        case .tangerine: return Color(red: 0xE0 / 255, green: 0x55 / 255, blue: 0x22 / 255)
+        case .sky: return Color(red: 0x23 / 255, green: 0x5F / 255, blue: 0x94 / 255)
+        case .berry: return Color(red: 0x96 / 255, green: 0x28 / 255, blue: 0x4F / 255)
+        case .violet: return Color(red: 0x5C / 255, green: 0x43 / 255, blue: 0x94 / 255)
+        }
+    }
+}
+
+/// A small set of vector avatar marks — no emoji, per the app's design rules.
+enum AvatarIcon: String, Codable, CaseIterable, Identifiable {
+    case stopwatch, star, bolt, flame, graduationCap, target
+
+    var id: String { rawValue }
+
+    var symbolName: String {
+        switch self {
+        case .stopwatch: return "stopwatch.fill"
+        case .star: return "star.fill"
+        case .bolt: return "bolt.fill"
+        case .flame: return "flame.fill"
+        case .graduationCap: return "graduationcap.fill"
+        case .target: return "scope"
+        }
+    }
+}
+
+/// Holds the user's chosen accent palette. A plain `@Observable` singleton
+/// (not threaded through the environment) so `Color.smTangerine` can stay a
+/// simple static var that every existing call site already uses unchanged —
+/// SwiftUI's Observation tracking picks up the dependency wherever it's read
+/// during a view body, singleton or not.
+@Observable
+@MainActor
+final class ThemeManager {
+    static let shared = ThemeManager()
+    private static let key = "com.deitel.speedmath.accentPalette"
+
+    var palette: AccentPalette {
+        didSet { UserDefaults.standard.set(palette.rawValue, forKey: Self.key) }
+    }
+
+    private init() {
+        if let raw = UserDefaults.standard.string(forKey: Self.key),
+           let saved = AccentPalette(rawValue: raw) {
+            palette = saved
+        } else {
+            palette = .tangerine
+        }
+    }
 }
 
 extension Font {
@@ -83,6 +165,10 @@ enum SMIcon {
     static let clock = "stopwatch"
     static let sound = "speaker.wave.2.fill"
     static let haptics = "iphone.radiowaves.left.and.right"
+    static let goal = "flag.checkered"
+    static let celebrate = "sparkle"
+    static let palette = "paintpalette.fill"
+    static let avatar = "person.crop.circle.fill"
 }
 
 /// The brand glyph: a stopwatch — ring, crown, and a sweeping hand — drawn as

@@ -193,6 +193,23 @@
   .pro-feature svg { width: 18px; height: 18px; stroke: var(--tangerine); flex-shrink: 0; }
   .pro-price { font-family: 'Archivo Black', sans-serif; font-size: 15px; color: var(--brass); margin-top: 18px; }
 
+  /* ---------- FAQ ---------- */
+  .faq-list { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  .faq-item {
+    background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 18px 22px;
+  }
+  .faq-item summary {
+    cursor: pointer; font-weight: 700; font-size: 16px; color: var(--ink);
+    list-style: none; display: flex; align-items: center; justify-content: space-between;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: '+'; font-family: 'Archivo Black', sans-serif; font-size: 20px; color: var(--tangerine);
+    margin-left: 16px; transition: transform 0.25s ease; flex-shrink: 0;
+  }
+  .faq-item[open] summary::after { transform: rotate(45deg); }
+  .faq-item p { color: var(--ink-muted); font-size: 14.5px; margin-top: 12px; line-height: 1.6; }
+
   footer {
     padding: 48px 24px; text-align: center; border-top: 1px solid var(--border); color: var(--ink-muted); font-size: 13px;
   }
@@ -341,6 +358,39 @@
     </div>
     <a href="#" class="btn-primary">Get SpeedMath</a>
     <div class="pro-price">$4.99/month · cancel anytime</div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="section-label">Questions</div>
+    <div class="section-title display">Good to know.</div>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>Is SpeedMath free?</summary>
+        <p>Yes. The free version has everything — every grade level, both Type and Speed mode — supported by ads. Pro removes the ads and adds the AI tutor.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Do I need an account?</summary>
+        <p>No sign-in, ever. Your level, streaks, and stats live only on your device.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What's the difference between Type and Speed mode?</summary>
+        <p>Type uses a keypad built for math — digits, decimals, negatives, fractions. Speed listens to you say the answer out loud, processed entirely on your device, and times how long it takes.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Does Speed mode send my voice anywhere?</summary>
+        <p>No. Recognition runs on-device using Apple's Speech framework. Nothing is uploaded.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How does SpeedMath decide my level?</summary>
+        <p>Three fast, correct answers in a row moves you up; two wrong answers in a row moves you down. 130 levels span Grade 1 through university.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What does the AI tutor actually do?</summary>
+        <p>Pro subscribers can tap "Explain It" on any question to get a plain-language walkthrough, different from the built-in steps — useful when the standard explanation doesn't click.</p>
+      </details>
+    </div>
   </div>
 </section>
 
@@ -498,14 +548,27 @@
   sizeToContainer();
   new ResizeObserver(sizeToContainer).observe(mount);
 
+  // Scroll-linked camera: as the hero scrolls out of view, the watch tilts
+  // further and the camera dollies in slightly, so the 3D scene visibly
+  // reacts to scrolling rather than just idling.
+  let scrollProgress = 0;
+  function updateScrollProgress() {
+    const heroHeight = window.innerHeight || 800;
+    scrollProgress = Math.max(0, Math.min(1, window.scrollY / heroHeight));
+  }
+  updateScrollProgress();
+  window.addEventListener('scroll', updateScrollProgress, { passive: true });
+
   let lastTime = 0;
   function animate(time) {
     const dt = Math.min((time - lastTime) / 1000, 0.05) || 0;
     lastTime = time;
     if (!prefersReducedMotion3D) {
       watch.rotation.y += dt * 0.5;
-      watch.rotation.x = 0.12 + Math.sin(time * 0.0004) * 0.05;
+      watch.rotation.x = 0.12 + Math.sin(time * 0.0004) * 0.05 + scrollProgress * 0.5;
+      watch.position.y = -scrollProgress * 0.6;
       handPivot.rotation.z -= dt * 1.1;
+      camera.position.z = 6.2 - scrollProgress * 1.6;
     }
     renderer.render(scene, camera);
     requestAnimationFrame(animate);

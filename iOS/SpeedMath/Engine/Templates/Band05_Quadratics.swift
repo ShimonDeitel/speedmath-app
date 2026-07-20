@@ -122,5 +122,50 @@ enum Band05Quadratics {
                              spokenPrompt: "f of x equals \(a) x squared\(bTerm)\(cTerm), what is f of \(x)?",
                              answer: .integer(answer), steps: steps)
         },
+        QuestionTemplate(id: "vertex.x", topic: topic, levels: range) { level, rng in
+            let vertexX = rInt(-10...10, &rng)
+            let b = -2 * vertexX
+            let c = rInt(-10...10, &rng)
+            let bTerm = b == 0 ? "" : (b > 0 ? " + \(b)x" : " - \(abs(b))x")
+            let cTerm = c == 0 ? "" : (c > 0 ? " + \(c)" : " - \(abs(c))")
+            let steps = buildSteps {
+                $0.add("For x² + bx + c, the vertex is at x = -b/2.")
+                $0.add("x = -(\(b)) ÷ 2 = \(vertexX).")
+            }
+            return Question(templateID: "vertex.x", topic: topic, level: level,
+                             prompt: "Vertex x-coordinate of x²\(bTerm)\(cTerm)",
+                             spokenPrompt: "The vertex x coordinate of x squared\(bTerm)\(cTerm)",
+                             answer: .integer(vertexX), steps: steps)
+        },
+        QuestionTemplate(id: "discriminant", topic: topic, levels: range) { level, rng in
+            let a = rInt(1...4, &rng)
+            let b = rInt(-9...9, &rng)
+            let c = rInt(-9...9, &rng)
+            let answer = b * b - 4 * a * c
+            let bTerm = b >= 0 ? "+ \(b)x" : "- \(abs(b))x"
+            let cTerm = c >= 0 ? "+ \(c)" : "- \(abs(c))"
+            let steps = buildSteps {
+                $0.add("Discriminant = b² - 4ac = (\(b))² - 4(\(a))(\(c)).")
+                $0.add("= \(b * b) - \(4 * a * c) = \(answer).")
+            }
+            return Question(templateID: "discriminant", topic: topic, level: level,
+                             prompt: "Discriminant of \(a)x² \(bTerm) \(cTerm)",
+                             spokenPrompt: "The discriminant of \(a) x squared \(bTerm) \(cTerm)",
+                             answer: .integer(answer), steps: steps)
+        },
+        QuestionTemplate(id: "abs.value.eq", topic: topic, levels: range) { level, rng in
+            let c = rInt(-10...10, &rng)
+            let k = rInt(1...10, &rng)
+            let larger = c + k
+            let smaller = c - k
+            let steps = buildSteps {
+                $0.add("x - \(c) = \(k) or x - \(c) = -\(k).")
+                $0.add("That gives x = \(larger) or x = \(smaller); the larger is \(larger).")
+            }
+            return Question(templateID: "abs.value.eq", topic: topic, level: level,
+                             prompt: "|x - \(c)| = \(k), larger solution?",
+                             spokenPrompt: "The absolute value of x minus \(c) equals \(k), what is the larger solution?",
+                             answer: .integer(larger), steps: steps)
+        },
     ]
 }

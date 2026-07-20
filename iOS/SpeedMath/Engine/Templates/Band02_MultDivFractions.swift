@@ -100,5 +100,35 @@ enum Band02MultDivFractions {
                              prompt: "\(n)/\(d) × \(k)", spokenPrompt: "\(n) over \(d) times \(k)",
                              answer: .integer(answer), steps: steps)
         },
+        QuestionTemplate(id: "square.small", topic: topic, levels: range) { level, rng in
+            let n = rInt(2...12, &rng)
+            let steps = buildSteps { $0.add("\(n)² means \(n) × \(n).") ; $0.add("Answer: \(n * n).") }
+            return Question(templateID: "square.small", topic: topic, level: level,
+                             prompt: "\(n)²", spokenPrompt: "\(n) squared",
+                             answer: .integer(n * n), steps: steps)
+        },
+        QuestionTemplate(id: "mult.by.10.100", topic: topic, levels: range) { level, rng in
+            let a = rInt(2...99, &rng)
+            let mult = [10, 100][rInt(0...1, &rng)]
+            let steps = buildSteps { $0.add("Multiplying by \(mult) shifts the digits over.") ; $0.add("Answer: \(a * mult).") }
+            return Question(templateID: "mult.by.10.100", topic: topic, level: level,
+                             prompt: "\(a) × \(mult)", spokenPrompt: "\(a) times \(mult)",
+                             answer: .integer(a * mult), steps: steps)
+        },
+        QuestionTemplate(id: "fraction.simplify", topic: topic, levels: range) { level, rng in
+            let denomChoices = [2, 3, 4, 5]
+            let rd = denomChoices[rInt(0...(denomChoices.count - 1), &rng)]
+            let rn = rInt(1...(rd - 1), &rng)
+            let k = rInt(2...6, &rng)
+            let n = rn * k, d = rd * k
+            let answer = AnswerValue.reducedFraction(rn, rd)
+            let steps = buildSteps {
+                $0.add("\(n) and \(d) share a common factor of \(k).")
+                $0.add("\(n) ÷ \(k) = \(rn), \(d) ÷ \(k) = \(rd), giving \(answer).")
+            }
+            return Question(templateID: "fraction.simplify", topic: topic, level: level,
+                             prompt: "Simplify \(n)/\(d)", spokenPrompt: "Simplify \(n) over \(d)",
+                             answer: answer, steps: steps)
+        },
     ]
 }

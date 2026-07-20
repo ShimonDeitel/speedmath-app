@@ -7,6 +7,7 @@ import SwiftUI
 /// text field for the mandatory keyboard-dismiss UI test.
 struct KeypadView: View {
     @Binding var text: String
+    var hapticStyle: HapticStyle = .medium
     var onSubmit: () -> Void
 
     private let rows: [[String]] = [
@@ -34,7 +35,7 @@ struct KeypadView: View {
     }
 
     private func append(_ s: String) {
-        Haptics.selection()
+        Haptics.selection(hapticStyle)
         if s == "-" {
             if text.hasPrefix("-") {
                 text.removeFirst()
@@ -49,7 +50,7 @@ struct KeypadView: View {
     }
 
     private func backspace() {
-        Haptics.selection()
+        Haptics.selection(hapticStyle)
         guard !text.isEmpty else { return }
         text.removeLast()
     }

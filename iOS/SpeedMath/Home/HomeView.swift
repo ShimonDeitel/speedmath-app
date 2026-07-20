@@ -39,6 +39,7 @@ struct HomeView: View {
                     Text("Level \(stats.level) of 130")
                         .font(.smBody(12))
                         .foregroundStyle(Color.smInkMuted)
+                    dailyGoalLabel
                 }
 
                 Spacer()
@@ -59,10 +60,21 @@ struct HomeView: View {
 
     private var startButton: some View {
         Button {
-            Haptics.light()
+            Haptics.light(stats.snapshot.hapticStyle)
             startSession = true
         } label: {
             ZStack {
+                Circle()
+                    .stroke(Color.smInk.opacity(0.08), lineWidth: 6)
+                    .frame(width: 208, height: 208)
+                Circle()
+                    .trim(from: 0, to: stats.dailyGoalProgress)
+                    .stroke(stats.dailyGoalMet ? Color.smCorrect : Color.smBrass,
+                            style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                    .frame(width: 208, height: 208)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: stats.dailyGoalProgress)
+
                 Circle()
                     .fill(Color.smTangerine)
                     .frame(width: 176, height: 176)
@@ -80,6 +92,19 @@ struct HomeView: View {
         }
         .buttonStyle(.smPressable)
         .accessibilityIdentifier("startButton")
+    }
+
+    private var dailyGoalLabel: some View {
+        HStack(spacing: 4) {
+            Image(systemName: stats.dailyGoalMet ? SMIcon.correct : SMIcon.goal)
+                .foregroundStyle(stats.dailyGoalMet ? Color.smCorrect : Color.smBrass)
+            Text(stats.dailyGoalMet
+                 ? "Daily goal complete!"
+                 : "\(stats.snapshot.answeredToday)/\(stats.snapshot.dailyGoal) today")
+        }
+        .font(.smBody(12, weight: .medium))
+        .foregroundStyle(Color.smInkMuted)
+        .padding(.top, 2)
     }
 }
 

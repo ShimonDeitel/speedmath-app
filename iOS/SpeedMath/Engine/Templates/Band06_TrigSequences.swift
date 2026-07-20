@@ -80,5 +80,44 @@ enum Band06TrigSequences {
                              prompt: "1 + 2 + ... + \(n)", spokenPrompt: "The sum of 1 through \(n)",
                              answer: .integer(answer), steps: steps)
         },
+        QuestionTemplate(id: "sequence.sum.arithmetic", topic: topic, levels: range) { level, rng in
+            let a1 = rInt(-10...10, &rng)
+            let d = rInt(-6...6, &rng) == 0 ? 2 : rInt(-6...6, &rng)
+            let n = rInt(4...15, &rng)
+            let numerator = n * (2 * a1 + (n - 1) * d)
+            let answer = numerator / 2
+            let steps = buildSteps {
+                $0.add("Sum = n(2a₁ + (n-1)d) ÷ 2 = \(n)(2×\(a1) + \(n - 1)×\(d)) ÷ 2.")
+                $0.add("= \(numerator) ÷ 2 = \(answer).")
+            }
+            return Question(templateID: "sequence.sum.arithmetic", topic: topic, level: level,
+                             prompt: "Sum of first \(n) terms: a₁=\(a1), d=\(d)?",
+                             spokenPrompt: "The sum of the first \(n) terms of an arithmetic sequence starting at \(a1) with common difference \(d)",
+                             answer: .integer(answer), steps: steps)
+        },
+        QuestionTemplate(id: "pythagorean.leg", topic: topic, levels: range) { level, rng in
+            let triple = pythagoreanTriples[rInt(0...(pythagoreanTriples.count - 1), &rng)]
+            let k = rInt(1...4, &rng)
+            let a = triple.0 * k, b = triple.1 * k, c = triple.2 * k
+            let steps = buildSteps {
+                $0.add("leg² = hypotenuse² - other leg² = \(c)² - \(a)² = \(c * c) - \(a * a) = \(c * c - a * a).")
+                $0.add("√\(c * c - a * a) = \(b).")
+            }
+            return Question(templateID: "pythagorean.leg", topic: topic, level: level,
+                             prompt: "Right triangle: hypotenuse \(c), one leg \(a) — other leg?",
+                             spokenPrompt: "A right triangle has hypotenuse \(c) and one leg \(a). What is the other leg?",
+                             answer: .integer(b), steps: steps)
+        },
+        QuestionTemplate(id: "sigma.even", topic: topic, levels: range) { level, rng in
+            let n = rInt(3...20, &rng)
+            let answer = n * (n + 1)
+            let steps = buildSteps {
+                $0.add("The sum of the first n even numbers is n(n+1) = \(n)(\(n + 1)).")
+                $0.add("Answer: \(answer).")
+            }
+            return Question(templateID: "sigma.even", topic: topic, level: level,
+                             prompt: "2 + 4 + ... + \(2 * n)", spokenPrompt: "The sum of the first \(n) even numbers",
+                             answer: .integer(answer), steps: steps)
+        },
     ]
 }

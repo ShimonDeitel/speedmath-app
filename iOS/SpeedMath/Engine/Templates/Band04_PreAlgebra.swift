@@ -102,5 +102,48 @@ enum Band04PreAlgebra {
                              prompt: "\(a)(x + \(b)), at x = \(x)", spokenPrompt: "\(a) times, x plus \(b), at x equals \(x)",
                              answer: .integer(answer), steps: steps)
         },
+        QuestionTemplate(id: "proportion.solve", topic: topic, levels: range) { level, rng in
+            let d1 = rInt(2...9, &rng)
+            let k = rInt(2...6, &rng)
+            let n1 = rInt(1...(d1 - 1), &rng)
+            let d2 = d1 * k
+            let answer = n1 * k
+            let steps = buildSteps {
+                $0.add("\(d1) scales up to \(d2) by multiplying by \(k).")
+                $0.add("Do the same to the top: \(n1) × \(k) = \(answer).")
+            }
+            return Question(templateID: "proportion.solve", topic: topic, level: level,
+                             prompt: "\(n1)/\(d1) = x/\(d2), x = ?", spokenPrompt: "\(n1) over \(d1) equals x over \(d2), what is x?",
+                             answer: .integer(answer), steps: steps)
+        },
+        QuestionTemplate(id: "expo.zero.one", topic: topic, levels: range) { level, rng in
+            let base = rInt(2...12, &rng)
+            let useZero = Bool.random(using: &rng)
+            let exp = useZero ? 0 : 1
+            let answer = useZero ? 1 : base
+            let steps = buildSteps {
+                if useZero {
+                    $0.add("Any nonzero number to the power of 0 is 1.")
+                } else {
+                    $0.add("Any number to the power of 1 is itself.")
+                }
+            }
+            return Question(templateID: "expo.zero.one", topic: topic, level: level,
+                             prompt: "\(base)^\(exp)", spokenPrompt: "\(base) to the power of \(exp)",
+                             answer: .integer(answer), steps: steps)
+        },
+        QuestionTemplate(id: "combine.like.terms", topic: topic, levels: range) { level, rng in
+            let a = rInt(1...9, &rng), b = rInt(1...9, &rng)
+            let x = rInt(-8...8, &rng)
+            let combined = a + b
+            let answer = combined * x
+            let steps = buildSteps {
+                $0.add("Combine like terms first: \(a)x + \(b)x = \(combined)x.")
+                $0.add("Evaluate at x = \(x): \(combined) × \(x) = \(answer).")
+            }
+            return Question(templateID: "combine.like.terms", topic: topic, level: level,
+                             prompt: "\(a)x + \(b)x, at x = \(x)", spokenPrompt: "\(a) x plus \(b) x, at x equals \(x)",
+                             answer: .integer(answer), steps: steps)
+        },
     ]
 }
