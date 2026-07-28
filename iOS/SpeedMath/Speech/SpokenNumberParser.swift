@@ -7,8 +7,29 @@ import Foundation
 /// fallback. Returns nil for anything that isn't a clean match.
 enum SpokenNumberParser {
     private static let fillerPrefixes = [
-        "the answer is", "answer is", "it's", "its", "i think it's",
-        "um", "uh", "well", "it is",
+        "the answer is", "answer is", "i think it's", "i believe it's",
+        "i think it is", "i guess it's", "it's", "its", "it is",
+        "um", "uh", "well",
+    ]
+
+    private static let fillerSuffixes = [
+        "i think", "i believe", "i guess", "maybe", "probably", "please",
+    ]
+
+    /// SFSpeechRecognizer sometimes hears a number word as its homophone,
+    /// especially in short utterances with little surrounding context. None
+    /// of these collide with a word the parser gives other meaning to
+    /// ("over", "point", "quarter", etc.), so the substitution is safe to
+    /// apply unconditionally, word by word.
+    private static let homophones: [String: String] = [
+        "to": "two", "too": "two",
+        "for": "four", "fore": "four",
+        "ate": "eight",
+        "won": "one",
+        "free": "three", "tree": "three",
+        "sicks": "six", "sex": "six",
+        "nein": "nine",
+        "aid": "eight",
     ]
 
     private static let ones: [String: Int] = [
@@ -38,15 +59,34 @@ enum SpokenNumberParser {
         "tenth": 10, "tenths": 10,
     ]
 
+    /// Words/phrases a speaker uses to restart their answer mid-utterance
+    /// ("seven — no, eight"). Checked longest-first so multi-word cues win
+    /// over a bare "no" inside them.
+    private static let correctionMarkers = [
+        "i mean", "scratch that", "actually", "sorry", "wait", "no",
+    ]
+
     static func parse(_ raw: String) -> AnswerValue? {
         let cleaned = clean(raw)
         guard !cleaned.isEmpty else { return nil }
 
+        if let value = parseCleaned(cleaned) { return value }
+
+        // Self-correction: re-parse using only what came after the last
+        // correction cue, so "seven, no, eight" resolves to 8.
+        if let segment = correctedSegment(of: cleaned), let value = parseCleaned(segment) {
+            return value
+        }
+
+        return nil
+    }
+
+    private static func parseCleaned(_ cleaned: String) -> AnswerValue? {
         if let direct = AnswerValue.parse(display: cleaned.replacingOccurrences(of: " ", with: "")) {
             return direct
         }
 
-        let words = cleaned.split(separator: " ").map(String.init)
+        let words = cleaned.split(separator: " ").map { homophones[String($0)] ?? String($0) }
         guard !words.isEmpty else { return nil }
 
         var isNegative = false
@@ -74,13 +114,41 @@ enum SpokenNumberParser {
         return nil
     }
 
+    /// Finds the last correction cue in `cleaned` (as a whole-word match) and
+    /// returns whatever follows it, trimmed. Nil if no cue is present.
+    private static func correctedSegment(of cleaned: String) -> String? {
+        var best: Range<String.Index>?
+        for marker in correctionMarkers {
+            var searchStart = cleaned.startIndex
+            while searchStart < cleaned.endIndex,
+                  let range = cleaned.range(of: marker, range: searchStart..<cleaned.endIndex) {
+                let startsAtBoundary = range.lowerBound == cleaned.startIndex
+                    || cleaned[cleaned.index(before: range.lowerBound)] == " "
+                let endsAtBoundary = range.upperBound == cleaned.endIndex
+                    || cleaned[range.upperBound] == " "
+                if startsAtBoundary && endsAtBoundary,
+                   best == nil || range.upperBound > best!.upperBound {
+                    best = range
+                }
+                searchStart = range.upperBound
+            }
+        }
+        guard let range = best else { return nil }
+        let segment = cleaned[range.upperBound...].trimmingCharacters(in: .whitespaces)
+        return segment.isEmpty ? nil : segment
+    }
+
     private static func clean(_ raw: String) -> String {
         var s = raw.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         s = s.trimmingCharacters(in: CharacterSet(charactersIn: ".!?"))
         for prefix in fillerPrefixes where s.hasPrefix(prefix) {
             s = String(s.dropFirst(prefix.count)).trimmingCharacters(in: .whitespaces)
         }
+        for suffix in fillerSuffixes where s.hasSuffix(suffix) {
+            s = String(s.dropLast(suffix.count)).trimmingCharacters(in: .whitespaces)
+        }
         s = s.replacingOccurrences(of: "-", with: " ")
+        s = s.replacingOccurrences(of: ",", with: " ")
         s = s.replacingOccurrences(of: "  ", with: " ")
         return s
     }

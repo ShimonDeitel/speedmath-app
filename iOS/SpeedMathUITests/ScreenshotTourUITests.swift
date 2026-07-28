@@ -28,6 +28,15 @@ final class ScreenshotTourUITests: XCTestCase {
         let speedSegment = app.segmentedControls["modePicker"].buttons["Speed"]
         if speedSegment.waitForExistence(timeout: 5) {
             speedSegment.tap()
+            // Switching to Speed mode triggers the mic/speech-recognition
+            // system permission alerts on first use; give the interruption
+            // monitor time to dismiss them before capturing, or the
+            // screenshot catches a system dialog instead of the app.
+            let deadline = Date().addingTimeInterval(6)
+            while app.alerts.count > 0 && Date() < deadline {
+                app.tap() // nudges XCTest to run its interruption monitor
+                usleep(300_000)
+            }
             attach(app, name: "04-Speed-Mode")
         }
 

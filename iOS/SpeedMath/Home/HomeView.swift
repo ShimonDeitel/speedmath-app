@@ -5,6 +5,12 @@ struct HomeView: View {
     @Environment(StatsStore.self) private var stats
     @State private var startSession = false
     @State private var showProfile = false
+    @State private var showLimitPaywall = false
+    @State private var breathe = false
+
+    private var atFreeLimit: Bool {
+        !proStore.isPro && stats.level >= stats.freeLevelCap
+    }
 
     var body: some View {
         ZStack {
@@ -25,10 +31,6 @@ struct HomeView: View {
                 }
                 .padding(.top, SMSpacing.sm)
 
-                if !proStore.isPro {
-                    BannerAdView()
-                }
-
                 Spacer()
 
                 VStack(spacing: SMSpacing.xs) {
@@ -36,17 +38,17 @@ struct HomeView: View {
                         .font(.smBody(14, weight: .semibold))
                         .foregroundStyle(Color.smInkMuted)
                     startButton
-                    Text("Level \(stats.level) of 130")
+                    Text("Level \(stats.level) of \(GradeMap.maxLevel)")
                         .font(.smBody(12))
                         .foregroundStyle(Color.smInkMuted)
-                    dailyGoalLabel
+                    if atFreeLimit {
+                        limitReachedLabel
+                    } else {
+                        dailyGoalLabel
+                    }
                 }
 
                 Spacer()
-
-                if !proStore.isPro {
-                    NativeAdCard()
-                }
             }
             .padding(SMSpacing.md)
         }
@@ -56,14 +58,38 @@ struct HomeView: View {
         .sheet(isPresented: $showProfile) {
             ProfileView()
         }
+        .sheet(isPresented: $showLimitPaywall) {
+            PaywallView()
+        }
+    }
+
+    private var limitReachedLabel: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "lock.fill")
+            Text("Free limit reached — upgrade to keep going")
+        }
+        .font(.smBody(12, weight: .medium))
+        .foregroundStyle(Color.smTangerine)
+        .padding(.top, 2)
     }
 
     private var startButton: some View {
         Button {
             Haptics.light(stats.snapshot.hapticStyle)
-            startSession = true
+            if atFreeLimit {
+                showLimitPaywall = true
+            } else {
+                startSession = true
+            }
         } label: {
             ZStack {
+                Circle()
+                    .fill(Color.smTangerine.opacity(0.16))
+                    .frame(width: 210, height: 210)
+                    .scaleEffect(breathe ? 1.16 : 0.92)
+                    .opacity(breathe ? 0 : 0.6)
+                    .animation(.easeOut(duration: 2.6).repeatForever(autoreverses: false), value: breathe)
+
                 Circle()
                     .stroke(Color.smInk.opacity(0.08), lineWidth: 6)
                     .frame(width: 208, height: 208)
@@ -89,9 +115,12 @@ struct HomeView: View {
                 }
                 .foregroundStyle(.white)
             }
+            .scaleEffect(breathe ? 1.015 : 1.0)
+            .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: breathe)
         }
         .buttonStyle(.smPressable)
         .accessibilityIdentifier("startButton")
+        .onAppear { breathe = true }
     }
 
     private var dailyGoalLabel: some View {
@@ -114,5 +143,4 @@ struct HomeView: View {
     }
     .environment(ProStore())
     .environment(StatsStore())
-    .environment(AdsCoordinator())
 }

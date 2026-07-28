@@ -1,6 +1,6 @@
 SpeedMath is math practice with nothing between you and the next question. No account, no setup screen — one big button starts a round.
 
-Every question is generated on the spot, from first-grade counting up through university-level integrals, determinants, and limits, across 130 levels that track ten per grade. Answer in Type mode on a keypad built for math — digits, decimals, negatives, and fractions — or switch to Speed mode and just say the answer out loud; SpeedMath listens on-device and times how long it takes you. Get it right or wrong, you always see a clear worked solution afterward, and your level moves up or down based on how fast and how accurate you've been.
+Every question is generated on the spot, from first-grade counting all the way through university calculus, complex numbers and eigenvalues, and expert-level number theory and probability — 150 levels that track ten per stage. Answer in Type mode on a keypad built for math — digits, decimals, negatives, and fractions — or switch to Speed mode and just say the answer out loud; SpeedMath listens on-device and times how long it takes you. Get it right or wrong, you always see a clear worked solution afterward, and your level moves up or down based on how fast and how accurate you've been.
 
 Your progress, streaks, and "performing at Grade X" estimate live entirely on your device — there's no account to create and nothing to sync.
 

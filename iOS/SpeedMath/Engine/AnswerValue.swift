@@ -74,6 +74,17 @@ enum AnswerValue: Equatable, CustomStringConvertible {
         let s = raw.trimmingCharacters(in: .whitespaces)
         guard !s.isEmpty else { return nil }
 
+        // "^" is only reachable from the pro calculator's exponent key, so a
+        // plain numeric answer never accidentally hits this branch.
+        if s.contains("^") {
+            let parts = s.split(separator: "^", maxSplits: 1)
+            guard parts.count == 2,
+                  let base = Double(parts[0]),
+                  let exponent = Double(parts[1])
+            else { return nil }
+            return .decimal(pow(base, exponent))
+        }
+
         if s.contains("/") {
             let parts = s.split(separator: "/", maxSplits: 1)
             guard parts.count == 2,

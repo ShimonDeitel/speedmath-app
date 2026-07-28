@@ -14,6 +14,9 @@ struct FlipDigitView: View {
             .foregroundStyle(color)
             .contentTransition(.numericText())
             .monospacedDigit()
+            .lineLimit(1...4)
+            .minimumScaleFactor(0.5)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 

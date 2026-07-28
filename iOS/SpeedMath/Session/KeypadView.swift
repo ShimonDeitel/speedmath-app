@@ -8,6 +8,10 @@ import SwiftUI
 struct KeypadView: View {
     @Binding var text: String
     var hapticStyle: HapticStyle = .medium
+    /// Adds a row of exponent keys ("^", "x²") for advanced-level answers —
+    /// toggled separately from `text` so switching layouts never clears
+    /// what's already been typed.
+    var showsProRow: Bool = false
     var onSubmit: () -> Void
 
     private let rows: [[String]] = [
@@ -19,6 +23,12 @@ struct KeypadView: View {
 
     var body: some View {
         VStack(spacing: SMSpacing.xs) {
+            if showsProRow {
+                HStack(spacing: SMSpacing.xs) {
+                    keyButton("^") { append("^") }
+                    keyButton("x²") { appendSquare() }
+                }
+            }
             ForEach(rows, id: \.self) { row in
                 HStack(spacing: SMSpacing.xs) {
                     ForEach(row, id: \.self) { key in
@@ -46,7 +56,14 @@ struct KeypadView: View {
         }
         if s == "." && text.contains(".") { return }
         if s == "/" && text.contains("/") { return }
+        if s == "^" && text.contains("^") { return }
         text += s
+    }
+
+    private func appendSquare() {
+        Haptics.selection(hapticStyle)
+        guard !text.isEmpty, !text.contains("^") else { return }
+        text += "^2"
     }
 
     private func backspace() {

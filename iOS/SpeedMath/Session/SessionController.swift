@@ -61,4 +61,11 @@ final class SessionController {
         questionShownAt = Date()
         phase = .asking
     }
+
+    /// Moves to the next question without scoring this one — neither a hit
+    /// nor a miss, so it doesn't touch streak or accuracy.
+    func skip() {
+        guard case .asking = phase else { return }
+        advance()
+    }
 }

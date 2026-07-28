@@ -6,9 +6,12 @@ struct SolutionView: View {
     let submittedText: String
     var onNext: () -> Void
 
-    @Environment(ProStore.self) private var proStore
     @Environment(StatsStore.self) private var stats
-    @State private var showExplain = false
+    @Environment(ProStore.self) private var proStore
+    @State private var iconPop = false
+    @State private var revealedSteps = 0
+    @State private var showTutorChat = false
+    @State private var showPaywall = false
 
     var body: some View {
         VStack(spacing: SMSpacing.md) {
@@ -16,6 +19,8 @@ struct SolutionView: View {
                 Image(systemName: correct ? SMIcon.correct : SMIcon.wrong)
                     .font(.smBody(28, weight: .bold))
                     .foregroundStyle(correct ? Color.smCorrect : Color.smWrong)
+                    .scaleEffect(iconPop ? 1 : 0.4)
+                    .opacity(iconPop ? 1 : 0)
                     .accessibilityIdentifier(correct ? "verdictCorrect" : "verdictWrong")
                 VStack(alignment: .leading, spacing: 2) {
                     Text(correct ? "Correct" : "Not quite")
@@ -48,27 +53,8 @@ struct SolutionView: View {
                                 .font(.smBody(14))
                                 .foregroundStyle(Color.smInk)
                         }
-                    }
-
-                    if proStore.isPro {
-                        Button {
-                            showExplain = true
-                        } label: {
-                            Label("Ask the AI tutor", systemImage: SMIcon.explain)
-                                .font(.smBody(14, weight: .semibold))
-                        }
-                        .padding(.top, SMSpacing.xs)
-                        .accessibilityIdentifier("explainButton")
-                    } else {
-                        Button {
-                            showExplain = true
-                        } label: {
-                            Label("Explain It — Pro", systemImage: SMIcon.lock)
-                                .font(.smBody(14, weight: .semibold))
-                                .foregroundStyle(Color.smInkMuted)
-                        }
-                        .padding(.top, SMSpacing.xs)
-                        .accessibilityIdentifier("explainLockedButton")
+                        .opacity(index < revealedSteps ? 1 : 0)
+                        .offset(x: index < revealedSteps ? 0 : -14)
                     }
                 }
                 .accessibilityIdentifier("solutionSteps")
@@ -76,8 +62,8 @@ struct SolutionView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .smCard()
 
-                if !proStore.isPro {
-                    NativeAdCard().padding(.top, SMSpacing.sm)
+                if !correct {
+                    tutorPrompt
                 }
             }
 
@@ -99,13 +85,43 @@ struct SolutionView: View {
             .accessibilityIdentifier("nextButton")
         }
         .padding(SMSpacing.md)
-        .sheet(isPresented: $showExplain) {
-            if proStore.isPro {
-                ExplainSheet(question: question)
-            } else {
-                PaywallView()
+        .onAppear {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) { iconPop = true }
+            Task {
+                for index in 0..<question.steps.count {
+                    try? await Task.sleep(for: .milliseconds(110))
+                    withAnimation(.easeOut(duration: 0.25)) { revealedSteps = index + 1 }
+                }
             }
         }
+        .sheet(isPresented: $showTutorChat) {
+            TutorChatView(question: question, level: question.level)
+                .presentationDetents([.fraction(0.55), .large])
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
+    }
+
+    @ViewBuilder
+    private var tutorPrompt: some View {
+        Button {
+            if proStore.isPro {
+                showTutorChat = true
+            } else {
+                showPaywall = true
+            }
+        } label: {
+            Label(proStore.isPro ? "Ask the AI tutor" : "Unlock the AI tutor with Pro",
+                  systemImage: "sparkles")
+                .font(.smBody(13, weight: .semibold))
+                .foregroundStyle(Color.smTangerine)
+        }
+        .accessibilityIdentifier("askTutorButton")
+        .padding(SMSpacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .smCard()
+        .padding(.top, SMSpacing.sm)
     }
 }
 

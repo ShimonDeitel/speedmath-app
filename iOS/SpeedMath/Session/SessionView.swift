@@ -3,14 +3,14 @@ import SwiftUI
 struct SessionView: View {
     @Environment(StatsStore.self) private var stats
     @Environment(ProStore.self) private var proStore
-    @Environment(AdsCoordinator.self) private var adsCoordinator
     @Environment(\.dismiss) private var dismiss
 
     @State private var controller: SessionController?
     @State private var mode: AnswerMode = .type
     @State private var keypadText = ""
-    @State private var interstitial = InterstitialController()
+    @State private var useProCalculator = false
     @State private var showLevelUp = false
+    @State private var showLimitPaywall = false
 
     var body: some View {
         ZStack {
@@ -38,7 +38,9 @@ struct SessionView: View {
             guard controller == nil else { return }
             controller = SessionController(startingLevel: stats.level)
             mode = stats.snapshot.defaultMode
-            if !proStore.isPro { interstitial.preload(coordinator: adsCoordinator) }
+        }
+        .sheet(isPresented: $showLimitPaywall) {
+            PaywallView()
         }
         .onChange(of: stats.justLeveledUp) { _, leveledUp in
             guard leveledUp else { return }
@@ -65,24 +67,33 @@ struct SessionView: View {
         VStack(spacing: SMSpacing.md) {
             header(controller)
 
-            if !proStore.isPro {
-                BannerAdView()
-            }
-
-            switch controller.phase {
-            case .asking:
-                askingBody(controller)
-            case .solved(let correct, let submitted):
-                SolutionView(question: controller.question, correct: correct, submittedText: submitted) {
-                    keypadText = ""
-                    let shownInterstitial = !proStore.isPro && interstitial.maybePresent(from: rootViewController())
-                    controller.advance()
-                    if !proStore.isPro {
-                        interstitial.preload(coordinator: adsCoordinator)
+            Group {
+                switch controller.phase {
+                case .asking:
+                    askingBody(controller)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .leading).combined(with: .opacity),
+                            removal: .move(edge: .trailing).combined(with: .opacity)))
+                case .solved(let correct, let submitted):
+                    if mode == .speed {
+                        QuickVerdictView(correct: correct)
+                            .transition(.opacity)
+                            .task(id: controller.roundsCompleted) {
+                                try? await Task.sleep(for: .milliseconds(650))
+                                guard !Task.isCancelled else { return }
+                                completeRound(controller)
+                            }
+                    } else {
+                        SolutionView(question: controller.question, correct: correct, submittedText: submitted) {
+                            completeRound(controller)
+                        }
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .opacity))
                     }
-                    _ = shownInterstitial
                 }
             }
+            .animation(.spring(response: 0.4, dampingFraction: 0.82), value: controller.phase)
         }
         .padding(.horizontal, SMSpacing.md)
         .padding(.bottom, SMSpacing.md)
@@ -109,9 +120,36 @@ struct SessionView: View {
                 .labelsHidden()
                 .frame(width: 140)
                 .accessibilityIdentifier("modePicker")
+
+                Button {
+                    Haptics.light(stats.snapshot.hapticStyle)
+                    keypadText = ""
+                    controller.skip()
+                } label: {
+                    Image(systemName: SMIcon.skip)
+                        .font(.smBody(15, weight: .semibold))
+                        .foregroundStyle(Color.smInkMuted)
+                }
+                .accessibilityIdentifier("skipButton")
+                .accessibilityLabel("Skip question")
             }
-            StopwatchHandView(isSpinning: controller.phase == .asking, size: 40)
+            VStack(spacing: 2) {
+                StopwatchHandView(isSpinning: controller.phase == .asking, size: 40)
+                if case .asking = controller.phase {
+                    liveTimer(controller)
+                }
+            }
         }
+    }
+
+    private func liveTimer(_ controller: SessionController) -> some View {
+        TimelineView(.periodic(from: controller.questionShownAt, by: 0.1)) { context in
+            Text(Format.seconds(context.date.timeIntervalSince(controller.questionShownAt)))
+                .font(.smBody(11, weight: .semibold))
+                .foregroundStyle(Color.smInkMuted)
+                .monospacedDigit()
+        }
+        .accessibilityIdentifier("liveTimer")
     }
 
     @ViewBuilder
@@ -126,26 +164,60 @@ struct SessionView: View {
 
             Spacer(minLength: SMSpacing.sm)
 
-            switch mode {
-            case .type:
-                VStack(spacing: SMSpacing.sm) {
-                    Text(keypadText.isEmpty ? " " : keypadText)
-                        .font(.smDisplay(32))
-                        .foregroundStyle(Color.smTangerine)
+            Group {
+                switch mode {
+                case .type:
+                    VStack(spacing: SMSpacing.sm) {
+                        HStack {
+                            Text(keypadText.isEmpty ? " " : keypadText)
+                                .font(.smDisplay(32))
+                                .foregroundStyle(Color.smTangerine)
+                            Spacer()
+                            Button {
+                                Haptics.selection(stats.snapshot.hapticStyle)
+                                useProCalculator.toggle()
+                            } label: {
+                                Text(useProCalculator ? "Pro" : "Basic")
+                                    .font(.smBody(12, weight: .semibold))
+                                    .foregroundStyle(useProCalculator ? .white : Color.smInkMuted)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(
+                                        useProCalculator ? Color.smTangerine : Color.white.opacity(0.7),
+                                        in: Capsule())
+                            }
+                            .accessibilityIdentifier("calculatorModeToggle")
+                        }
                         .frame(height: 40)
-                    KeypadView(text: $keypadText, hapticStyle: stats.snapshot.hapticStyle) {
-                        submitTyped(controller)
+                        KeypadView(text: $keypadText, hapticStyle: stats.snapshot.hapticStyle, showsProRow: useProCalculator) {
+                            submitTyped(controller)
+                        }
+                        Button {
+                            Haptics.light(stats.snapshot.hapticStyle)
+                            keypadText = ""
+                            controller.submit(nil, displayText: "I don't know", stats: stats)
+                            playFeedback(for: controller)
+                        } label: {
+                            Text("I don't know")
+                                .font(.smBody(13, weight: .semibold))
+                                .foregroundStyle(Color.smInkMuted)
+                        }
+                        .accessibilityIdentifier("idkButton")
+                        .padding(.top, 2)
                     }
+                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                case .speed:
+                    SpeakAnswerView(
+                        onResult: { heard, parsed in
+                            controller.submit(parsed, displayText: heard, stats: stats)
+                            playFeedback(for: controller)
+                        },
+                        onSwitchToType: { mode = .type }
+                    )
+                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
                 }
-            case .speed:
-                SpeakAnswerView(
-                    onResult: { heard, parsed in
-                        controller.submit(parsed, displayText: heard, stats: stats)
-                        playFeedback(for: controller)
-                    },
-                    onSwitchToType: { mode = .type }
-                )
             }
+            .animation(.spring(response: 0.3, dampingFraction: 0.85), value: mode)
         }
     }
 
@@ -162,9 +234,17 @@ struct SessionView: View {
         correct ? Sound.correct(enabled: stats.snapshot.soundEnabled) : Sound.wrong(enabled: stats.snapshot.soundEnabled)
     }
 
-    private func rootViewController() -> UIViewController? {
-        UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-            .first?.rootViewController
+    /// Shared by the Solution screen's "Next" tap (Type mode) and the
+    /// auto-advance timer (Speed mode): score bookkeeping is already done by
+    /// `submit`. If this round's level-up carried a free user past their
+    /// cap, block here instead of advancing — the hard paywall check has to
+    /// live post-submit since leveling up is what can cross the cap.
+    private func completeRound(_ controller: SessionController) {
+        keypadText = ""
+        if !proStore.isPro && controller.currentLevel > stats.freeLevelCap {
+            showLimitPaywall = true
+            return
+        }
+        controller.advance()
     }
 }

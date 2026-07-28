@@ -59,8 +59,8 @@ struct ProfileView: View {
                                 showPaywall = true
                             } label: {
                                 HStack {
-                                    Image(systemName: SMIcon.explain)
-                                    Text("Go Pro — remove ads, unlock AI tutor")
+                                    Image(systemName: "infinity")
+                                    Text("Go Pro — unlock every level")
                                     Spacer()
                                     Image(systemName: "chevron.right")
                                 }
@@ -90,7 +90,11 @@ struct ProfileView: View {
                     .accessibilityIdentifier("settingsButton")
                 }
             }
-            .sheet(isPresented: $showSettings) {
+            // Pushed within this NavigationStack rather than presented as a
+            // second sheet-on-a-sheet — nested modal presentations leave
+            // toolbar-item hit-testing unreliable (observed as a degenerate
+            // {-1,-1} hit point during automated taps).
+            .navigationDestination(isPresented: $showSettings) {
                 SettingsView()
             }
             .sheet(isPresented: $showPaywall) {

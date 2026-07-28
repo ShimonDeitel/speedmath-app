@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import WidgetKit
 
 enum AnswerMode: String, Codable {
     case type, speed
@@ -37,6 +38,11 @@ struct StatsSnapshot: Codable {
     var dailyGoal: Int = 20
     var answeredToday: Int = 0
     var lastAnsweredDay: String = ""
+    var hasCompletedOnboarding: Bool = false
+    /// The level the placement quiz landed the player on. Free users may
+    /// progress up to `placementLevel + StatsStore.freeLevelSpan` before
+    /// hitting the hard paywall.
+    var placementLevel: Int = 1
 }
 
 @Observable
@@ -52,6 +58,7 @@ final class StatsStore {
     init() {
         if CommandLine.arguments.contains("-uitest") {
             snapshot = StatsSnapshot()
+            snapshot.hasCompletedOnboarding = true
         } else if let data = UserDefaults.standard.data(forKey: Self.key),
                   let decoded = try? JSONDecoder().decode(StatsSnapshot.self, from: data) {
             snapshot = decoded
@@ -66,6 +73,22 @@ final class StatsStore {
     }
 
     var level: Int { snapshot.level }
+
+    /// How many levels past placement a free user may reach before the app
+    /// hard-blocks progress behind the paywall — "give you a taste" sizing.
+    static let freeLevelSpan = 3
+
+    var freeLevelCap: Int {
+        min(snapshot.placementLevel + Self.freeLevelSpan, GradeMap.maxLevel)
+    }
+
+    func completeOnboarding(placementLevel: Int) {
+        let clamped = min(max(placementLevel, GradeMap.minLevel), GradeMap.maxLevel)
+        snapshot.placementLevel = clamped
+        snapshot.level = clamped
+        snapshot.hasCompletedOnboarding = true
+        persist()
+    }
 
     func recordAnswer(correct: Bool, elapsed: TimeInterval, level: Int) {
         rolloverDailyCountIfNeeded()
@@ -153,25 +176,26 @@ final class StatsStore {
     }
 
     /// Per-band accuracy for every band with enough samples to be meaningful,
-    /// in grade order — feeds the Profile breakdown list.
+    /// in grade order (by band index, not alphabetically — "Grade 10" would
+    /// otherwise sort before "Grade 2") — feeds the Profile breakdown list.
     var bandAccuracyBreakdown: [(label: String, accuracy: Double)] {
         snapshot.bandStats
-            .compactMap { index, stat -> (String, Double)? in
+            .compactMap { index, stat -> (Int, String, Double)? in
                 guard let acc = stat.accuracy else { return nil }
-                let label = index >= 12 ? "University" : "Grade \(index + 1)"
-                return (label, acc)
+                return (index, GradeMap.gradeLabel(forBandIndex: index), acc)
             }
             .sorted { $0.0 < $1.0 }
+            .map { (label: $0.1, accuracy: $0.2) }
     }
 
-    /// "Performing at Grade X": the highest grade band with enough samples
-    /// and >= 70% accuracy, falling back to the current level's grade.
+    /// "Performing at Grade X": the highest band with enough samples and
+    /// >= 70% accuracy, falling back to the current level's grade.
     var performingGradeLabel: String {
         let qualifyingBands = snapshot.bandStats
             .filter { ($0.value.accuracy ?? 0) >= 0.7 }
             .map(\.key)
         if let best = qualifyingBands.max() {
-            return best >= 12 ? "University" : "Grade \(best + 1)"
+            return GradeMap.gradeLabel(forBandIndex: best)
         }
         return GradeMap.gradeLabel(for: snapshot.level)
     }
@@ -194,10 +218,21 @@ final class StatsStore {
     private func persist() {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         UserDefaults.standard.set(data, forKey: Self.key)
+        guard !CommandLine.arguments.contains("-uitest") else { return }
+        SharedStatsBridge.write(WidgetStatsSnapshot(
+            level: snapshot.level,
+            maxLevel: GradeMap.maxLevel,
+            gradeLabel: GradeMap.gradeLabel(for: snapshot.level),
+            currentStreak: snapshot.currentStreak,
+            answeredToday: snapshot.answeredToday,
+            dailyGoal: snapshot.dailyGoal))
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func loadFlatteringDemoData() {
         var demo = StatsSnapshot()
+        demo.hasCompletedOnboarding = true
+        demo.placementLevel = 1
         demo.level = 47
         demo.totalAnswered = 812
         demo.totalCorrect = 701

@@ -31,15 +31,15 @@ struct PaywallView: View {
                     Text("SpeedMath Pro")
                         .font(.smDisplay(30))
                         .foregroundStyle(Color.smInk)
-                    Text("Go faster with zero distractions.")
+                    Text("You've hit your free limit. Unlock every level to keep going.")
                         .font(.smBody(15))
                         .foregroundStyle(Color.smInkMuted)
                 }
 
                 VStack(alignment: .leading, spacing: SMSpacing.sm) {
-                    featureRow(icon: "nosign", text: "No ads, ever")
-                    featureRow(icon: SMIcon.explain, text: "Ask the AI tutor to explain any question")
-                    featureRow(icon: "bolt.fill", text: "A cleaner, faster screen for every round")
+                    featureRow(icon: "infinity", text: "Practice every level, 1 through 1,500")
+                    featureRow(icon: "bolt.fill", text: "No caps, ever, on how far you can go")
+                    featureRow(icon: "sparkles", text: "Chat with an AI tutor when you get stuck")
                 }
                 .padding(SMSpacing.md)
                 .frame(maxWidth: .infinity, alignment: .leading)

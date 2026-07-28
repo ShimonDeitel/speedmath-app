@@ -12,6 +12,8 @@ enum QuestionEngine {
         all.append(contentsOf: Band06TrigSequences.templates)
         all.append(contentsOf: Band07Calculus.templates)
         all.append(contentsOf: Band08University.templates)
+        all.append(contentsOf: Band09Advanced.templates)
+        all.append(contentsOf: Band10Expert.templates)
         return all
     }()
 

@@ -20,7 +20,8 @@ enum PaceTarget {
 
 /// Pure decision logic for leveling: 3 consecutive fast-correct answers move
 /// the player up a level; 2 consecutive wrong answers move them down.
-/// Level is clamped to [1, 130]; the caller owns persistence.
+/// Level is clamped to [GradeMap.minLevel, GradeMap.maxLevel]; the caller
+/// owns persistence.
 struct LevelProgression {
     private(set) var level: Int
     private var fastCorrectStreak = 0

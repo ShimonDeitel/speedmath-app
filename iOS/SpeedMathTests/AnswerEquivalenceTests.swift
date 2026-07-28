@@ -34,6 +34,13 @@ final class AnswerEquivalenceTests: XCTestCase {
         XCTAssertNil(AnswerValue.parse(display: "3/0"))
     }
 
+    func testProCalculatorExponentParse() {
+        XCTAssertEqual(AnswerValue.parse(display: "2^10"), .integer(1024))
+        XCTAssertEqual(AnswerValue.parse(display: "3^2"), .integer(9))
+        XCTAssertNil(AnswerValue.parse(display: "2^"))
+        XCTAssertNil(AnswerValue.parse(display: "^2"))
+    }
+
     func testDescriptionFormatting() {
         XCTAssertEqual(AnswerValue.decimal(6.1).description, "6.1")
         XCTAssertEqual(AnswerValue.decimal(6.0).description, "6")

@@ -156,8 +156,6 @@ enum SMIcon {
     static let correct = "checkmark.circle.fill"
     static let wrong = "xmark.circle.fill"
     static let streak = "flame.fill"
-    static let explain = "sparkles"
-    static let lock = "lock.fill"
     static let close = "xmark"
     static let mic = "mic.fill"
     static let next = "arrow.right.circle.fill"
@@ -169,6 +167,7 @@ enum SMIcon {
     static let celebrate = "sparkle"
     static let palette = "paintpalette.fill"
     static let avatar = "person.crop.circle.fill"
+    static let skip = "forward.fill"
 }
 
 /// The brand glyph: a stopwatch — ring, crown, and a sweeping hand — drawn as

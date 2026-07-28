@@ -55,7 +55,10 @@ struct SpeakAnswerView: View {
                 listener.start()
                 return
             }
-            onResult(heard, parsed)
+            // If the speaker self-corrected mid-utterance ("28, no, 26"),
+            // the resolved value is the correction, not the raw transcript
+            // — record that, not the garbled "28 no 26" text.
+            onResult(parsed?.description ?? heard, parsed)
         }
         guard !didRequestPermission else {
             if listener.isAvailable { listener.start() }

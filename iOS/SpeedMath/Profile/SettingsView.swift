@@ -45,12 +45,11 @@ struct SettingsView: View {
             Section("Difficulty") {
                 Picker("Start at grade", selection: Binding(
                     get: { GradeMap.gradeIndex(for: stats.snapshot.level) },
-                    set: { stats.setLevel($0 * 10 + 1) }
+                    set: { stats.setLevel(GradeMap.firstLevel(ofBandIndex: $0)) }
                 )) {
-                    ForEach(0..<12) { index in
-                        Text("Grade \(index + 1)").tag(index)
+                    ForEach(0..<GradeMap.bandCount, id: \.self) { index in
+                        Text(GradeMap.gradeLabel(forBandIndex: index)).tag(index)
                     }
-                    Text("University").tag(12)
                 }
             }
 
@@ -96,7 +95,7 @@ struct SettingsView: View {
 
             Section {
                 if proStore.isPro {
-                    Label("You're Pro — ads removed", systemImage: SMIcon.correct)
+                    Label("You're Pro — every level unlocked", systemImage: SMIcon.correct)
                         .foregroundStyle(Color.smCorrect)
                 } else {
                     Button {
