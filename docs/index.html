@@ -114,6 +114,23 @@
     text-transform: uppercase; letter-spacing: 2px; font-size: 12px; font-weight: 800;
     color: var(--tangerine); margin-bottom: 12px; text-align: center;
   }
+  /* Real App Store screenshots. Horizontal scroll-snap rail so five 9:19.5
+     shots stay legible on phones instead of shrinking to thumbnails. */
+  .shot-rail {
+    display: flex; gap: 20px; margin-top: 40px; padding: 4px 0 22px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+  }
+  .shot-rail img {
+    flex: 0 0 auto; width: min(268px, 68vw); scroll-snap-align: center;
+    border-radius: 24px; display: block;
+    box-shadow: 0 18px 44px -14px rgba(27,42,74,.45);
+    border: 1px solid rgba(27,42,74,.10);
+  }
+  @media (min-width: 1080px) {
+    .shot-rail { justify-content: center; overflow-x: visible; flex-wrap: nowrap; }
+    .shot-rail img { width: 200px; }
+  }
   .section-title {
     font-family: 'Archivo Black', sans-serif; font-size: clamp(26px, 4vw, 40px);
     text-align: center; letter-spacing: -0.5px; margin-bottom: 60px;
@@ -284,6 +301,20 @@
         <h3>See every step</h3>
         <p>Right or wrong, get a clear worked solution — and with Pro, ask the AI tutor to explain it differently.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<section id="screens">
+  <div class="wrap">
+    <div class="section-label">In the app</div>
+    <div class="section-title display">See it before you install.</div>
+    <div class="shot-rail">
+      <img src="shots/shot1.jpg" alt="SpeedMath placement quiz finding your level" loading="lazy">
+      <img src="shots/shot2.jpg" alt="SpeedMath type mode with its custom keypad" loading="lazy">
+      <img src="shots/shot3.jpg" alt="SpeedMath speed mode answering out loud" loading="lazy">
+      <img src="shots/shot4.jpg" alt="SpeedMath step by step explanation" loading="lazy">
+      <img src="shots/shot5.jpg" alt="SpeedMath streaks and daily goal" loading="lazy">
     </div>
   </div>
 </section>
